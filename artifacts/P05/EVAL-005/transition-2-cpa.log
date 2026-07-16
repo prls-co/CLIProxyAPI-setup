@@ -1,0 +1,12 @@
+ Container shaman-api-cloudflared-1  Stopping
+ Container shaman-api-cloudflared-1  Stopped
+ Container cliproxyapi-setup-cli-proxy-api-1  Running
+ Container cliproxyapi-setup-cloudflared-token-init-1  Starting
+ Container cliproxyapi-setup-cloudflared-token-init-1  Started
+ Container cliproxyapi-setup-cli-proxy-api-1  Waiting
+ Container cliproxyapi-setup-cloudflared-token-init-1  Waiting
+ Container cliproxyapi-setup-cli-proxy-api-1  Healthy
+ Container cliproxyapi-setup-cloudflared-token-init-1  Exited
+ Container cliproxyapi-setup-cloudflared-1  Starting
+ Container cliproxyapi-setup-cloudflared-1  Started
+active origin: cpa

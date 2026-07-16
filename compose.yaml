@@ -1,0 +1,193 @@
+name: cliproxyapi-setup
+
+services:
+  cli-proxy-api:
+    image: eceasy/cli-proxy-api@sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161
+    restart: unless-stopped
+    command:
+      - ./CLIProxyAPI
+      - -config
+      - /CLIProxyAPI/config.yaml
+    ports:
+      - "127.0.0.1:8317:4000"
+    volumes:
+      - ./state/cpa/config.yaml:/CLIProxyAPI/config.yaml:ro
+      - ./state/cpa/auths:/root/.cli-proxy-api
+      - ./state/cpa/logs:/CLIProxyAPI/logs
+    networks:
+      - gateway
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          bash -c "exec 3<>/dev/tcp/127.0.0.1/4000 &&
+          printf 'GET /healthz HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 &&
+          grep -q '200 OK' <&3"
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
+
+  cpa-manager-plus:
+    image: seakee/cpa-manager-plus@sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351
+    restart: unless-stopped
+    environment:
+      HTTP_ADDR: 0.0.0.0:18317
+      CPA_UPSTREAM_URL: http://cli-proxy-api:4000
+      CPA_MANAGEMENT_KEY_FILE: /run/secrets/cpa_management_key
+      USAGE_DB_PATH: /data/usage.sqlite
+      CPA_MANAGER_DATA_KEY_PATH: /data/data.key
+      CPA_MANAGER_ADMIN_KEY_FILE: /run/secrets/cpamp_admin_key
+      USAGE_COLLECTOR_MODE: auto
+      USAGE_BATCH_SIZE: "100"
+      USAGE_POLL_INTERVAL_MS: "500"
+      USAGE_QUERY_LIMIT: "50000"
+    ports:
+      - "127.0.0.1:18317:18317"
+    volumes:
+      - ./state/cpamp/data:/data
+    secrets:
+      - cpamp_admin_key
+      - cpa_management_key
+    depends_on:
+      cli-proxy-api:
+        condition: service_healthy
+    networks:
+      - gateway
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://127.0.0.1:18317/health
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 5s
+
+  cpamp-public:
+    image: caddy@sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb
+    restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:18417:4000"
+    volumes:
+      - ./state/cpamp-public/Caddyfile:/etc/caddy/Caddyfile:ro
+    tmpfs:
+      - /config:uid=1000,gid=1000,mode=0700
+      - /data:uid=1000,gid=1000,mode=0700
+    depends_on:
+      cpa-manager-plus:
+        condition: service_healthy
+    networks:
+      gateway:
+        aliases:
+          - litellm
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:4000/management.html | grep -q 'CPA Manager Plus'
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 5s
+
+  cloudflared-token-init:
+    image: eceasy/cli-proxy-api@sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161
+    profiles:
+      - public
+    restart: "no"
+    user: "0:0"
+    entrypoint:
+      - /bin/bash
+      - -euc
+    command:
+      - >-
+        cp /run/secrets/tunnel_token_source /token/token &&
+        chown 65532:65532 /token/token &&
+        chmod 0400 /token/token
+    secrets:
+      - source: tunnel_token
+        target: tunnel_token_source
+    volumes:
+      - cloudflared-token:/token
+    network_mode: none
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  cloudflared:
+    image: cloudflare/cloudflared@sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9
+    restart: unless-stopped
+    user: "65532:65532"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - public
+    command:
+      - tunnel
+      - --no-autoupdate
+      - --loglevel
+      - info
+      - run
+      - --token-file
+      - /run/cloudflared-token/token
+    depends_on:
+      cli-proxy-api:
+        condition: service_healthy
+      cpamp-public:
+        condition: service_healthy
+      cloudflared-token-init:
+        condition: service_completed_successfully
+    volumes:
+      - cloudflared-token:/run/cloudflared-token:ro
+    networks:
+      - gateway
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  gateway:
+    name: cliproxyapi-gateway
+
+volumes:
+  cloudflared-token:
+    name: cliproxyapi-cloudflared-token
+
+secrets:
+  cpamp_admin_key:
+    file: ./state/secrets/cpamp-admin-key
+  cpa_management_key:
+    file: ./state/secrets/cpa-management-key
+  tunnel_token:
+    file: ./state/secrets/tunnel-token

@@ -1,0 +1,15 @@
+{
+  "test": "TEST-007",
+  "status": "pass",
+  "correlation_id": "test007-20260716T193312Z-1303447",
+  "cpamp_request_id": "6a4a3cd1",
+  "correlation_method": "serial event-count delta and timestamp window",
+  "model": "gpt-5.4-mini",
+  "failed": false,
+  "baseline_events": 159,
+  "final_events": 160,
+  "last_consumed_at": 1784230393236,
+  "last_inserted_at": 1784230393244,
+  "latency_ms": 982,
+  "total_tokens": 32
+}

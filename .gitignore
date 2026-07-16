@@ -1,0 +1,9 @@
+.env
+state/*
+!state/.gitignore
+backups/*
+!backups/.gitignore
+artifacts/**/*.raw
+artifacts/**/*.secret
+*.tmp
+__pycache__/

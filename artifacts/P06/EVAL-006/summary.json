@@ -1,0 +1,26 @@
+{
+  "evaluation": "EVAL-006",
+  "status": "pass",
+  "artifact_completeness": 1.000000,
+  "required_artifact_count": 13,
+  "present_artifact_count": 13,
+  "restore_hash_match_rate": 1.0,
+  "restore_mode_match_rate": 1.0,
+  "restore_ownership_match_rate": 1.0,
+  "private_recovery_seconds": 9.877,
+  "private_recovery_standard_deviation": 0,
+  "private_recovery_95_ci": [
+    9.877,
+    9.877
+  ],
+  "final_local_contract": 1,
+  "final_public_contract": 1,
+  "final_origin": "cpa",
+  "backup_archive": "cpa-state-20260716T190109Z-956816.tar.gz",
+  "thresholds": {
+    "artifact_completeness": 1.0,
+    "restore_hash_match_rate": 1.0,
+    "private_recovery_seconds": 180,
+    "final_public_contract": 1
+  }
+}

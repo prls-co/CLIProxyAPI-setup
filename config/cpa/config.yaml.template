@@ -1,0 +1,35 @@
+host: "0.0.0.0"
+port: 4000
+
+tls:
+  enable: false
+  cert: ""
+  key: ""
+
+remote-management:
+  allow-remote: true
+  secret-key: __CPA_MANAGEMENT_KEY_JSON__
+  disable-control-panel: true
+  disable-auto-update-panel: true
+
+auth-dir: "/root/.cli-proxy-api"
+
+api-keys:
+  - __CPA_API_KEY_JSON__
+
+debug: false
+logging-to-file: true
+logs-max-total-size-mb: 256
+error-logs-max-files: 10
+usage-statistics-enabled: true
+redis-usage-queue-retention-seconds: 3600
+passthrough-headers: false
+request-retry: 3
+max-retry-credentials: 1
+max-retry-interval: 30
+disable-image-generation: "passthrough"
+ws-auth: true
+
+routing:
+  strategy: "round-robin"
+  session-affinity: false

@@ -1,0 +1,2 @@
+ Container cliproxyapi-setup-cli-proxy-api-1  Running
+required model is absent from CPA catalog: gpt-5.4-mini

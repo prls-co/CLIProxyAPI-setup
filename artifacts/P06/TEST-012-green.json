@@ -1,0 +1,12 @@
+{
+  "test": "TEST-012",
+  "status": "pass",
+  "active_origin": "cpa",
+  "auth_manifest_sha256": "e4b6aa8b3760dd8c9b74abaa9423c351a341e4e3ff4cdc429a3b84fdda31c801",
+  "public_connector_unchanged": true,
+  "connector_id": "b377ef642f2ddc20dea3131ffcadde2c33cea55918c6d6cc747468ddcaa90be7",
+  "events_before": 153,
+  "events_after_restart": 153,
+  "events_final": 154,
+  "post_restart_collection": true
+}

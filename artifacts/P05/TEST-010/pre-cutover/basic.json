@@ -1,0 +1,73 @@
+{
+  "type": "response.completed",
+  "response": {
+    "id": "resp_k1EHKRkel85T9wREhd6Cyw-IIrmC0gjfrCiZc7GhY20Hhxtc93hoNaTenFbZq0csmsQTb3mGNzYTjTnDSkMCLeqYSzcXUncV-vqGhlOkq17wAKR3cjObj0hfHoTP0jHvyOXm1Q-k2G2D860HsR13BFsDIxug_GJTKk86zhrejhzGeR3duAVfNr9wqF4RoSiQ8Epd2QvnKJt68DRgSptOqv45BQ57pSnG7gpitUNTXIkvUhK6GQSSOH2gN9WfvIzq7GIS6RTUs-MimdijosnZNxHh55Z-i7Vvyao88-M_Avkjv77HkKAWNu1pjPLwhuMhQ-cCLOy4LZRX-ZRDJEr5Uvrd3nt76d3oMdJo5Qf0kLmW_d0kRJANgYiI4hBqvWnDApZ2xHf_jpDnXDCTHmvGbqOQGNK27dpsdgzMjJe6gNV9w15RO27cG4NtVMNN1Ih3eCaUEQdeBxcE7suPTrNqHMcy",
+    "created_at": 1784191710,
+    "instructions": "You are ChatGPT, a helpful assistant.",
+    "metadata": {},
+    "model": "gpt-5.4-mini-2026-03-17",
+    "object": "response",
+    "output": [],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "reasoning": {
+      "context": "current_turn",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 25,
+      "input_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "output_tokens": 7,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 32
+    },
+    "store": false,
+    "background": false,
+    "completed_at": 1784191711,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0,
+    "prompt_cache_key": "a59248f0-0123-4071-9a20-8b08baaa0c34",
+    "prompt_cache_retention": "24h",
+    "safety_identifier": "user-54LhlJqikHgQmCU08w6ApxKs",
+    "service_tier": "default",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "top_logprobs": 0
+  },
+  "sequence_number": 10,
+  "model": "gpt-5.4-mini"
+}

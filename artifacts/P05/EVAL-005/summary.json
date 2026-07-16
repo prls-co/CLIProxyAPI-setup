@@ -1,0 +1,56 @@
+{
+  "evaluation": "EVAL-005",
+  "status": "pass",
+  "transition_count": 4,
+  "transition_success_rate": 1.0,
+  "connector_overlap_count": 0,
+  "recovery_seconds": {
+    "mean": 7.6135,
+    "standard_deviation": 2.121876704712128,
+    "max": 11.151,
+    "bootstrap_mean_95_ci": [
+      5.965,
+      9.8635
+    ]
+  },
+  "final_origin": "cpa",
+  "thresholds": {
+    "transition_success_rate": 1.0,
+    "connector_overlap_count": 0,
+    "recovery_seconds_max": 120
+  },
+  "samples": [
+    {
+      "transition": 1,
+      "seed": 7101,
+      "target": "litellm",
+      "status": "pass",
+      "recovery_ms": 11151,
+      "connector_overlap": 0
+    },
+    {
+      "transition": 2,
+      "seed": 7101,
+      "target": "cpa",
+      "status": "pass",
+      "recovery_ms": 5929,
+      "connector_overlap": 0
+    },
+    {
+      "transition": 3,
+      "seed": 7102,
+      "target": "litellm",
+      "status": "pass",
+      "recovery_ms": 7373,
+      "connector_overlap": 0
+    },
+    {
+      "transition": 4,
+      "seed": 7102,
+      "target": "cpa",
+      "status": "pass",
+      "recovery_ms": 6001,
+      "connector_overlap": 0
+    }
+  ]
+}

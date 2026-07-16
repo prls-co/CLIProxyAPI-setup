@@ -1,0 +1,10 @@
+harness reproducibility: ok
+compose reproducibility: ok
+Responses reliability: ok
+sample 6101: collected in 3ms
+sample 6102: collected in 3ms
+sample 6103: collected in 3ms
+sample 6104: collected in 3ms
+sample 6105: collected in 3ms
+CPAMP collection evaluation: ok
+recovery rehearsal: ok

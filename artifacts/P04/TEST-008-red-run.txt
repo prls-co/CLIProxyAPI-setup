@@ -1,0 +1,1 @@
+bounded logging is not configured for cli-proxy-api

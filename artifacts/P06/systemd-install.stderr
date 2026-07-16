@@ -1,0 +1,5 @@
+ Container cliproxyapi-setup-cli-proxy-api-1  Running
+ Container cliproxyapi-setup-cpa-manager-plus-1  Running
+ Container cliproxyapi-setup-cli-proxy-api-1  Waiting
+ Container cliproxyapi-setup-cli-proxy-api-1  Healthy
+unit enabled; live activation deferred until the user manager restarts with Docker group membership

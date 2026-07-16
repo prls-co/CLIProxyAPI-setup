@@ -1,0 +1,22 @@
+[Unit]
+Description=CLIProxyAPI subscription gateway and CPA Manager Plus
+Documentation=file://@ROOT@/docs/operations.md
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=@ROOT@
+ExecStart=@ROOT@/scripts/systemd-start.sh
+ExecStop=@ROOT@/scripts/systemd-stop.sh
+TimeoutStartSec=360
+TimeoutStopSec=120
+Restart=on-failure
+RestartSec=15
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

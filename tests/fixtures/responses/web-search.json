@@ -1,0 +1,12 @@
+{
+  "model": "gpt-5.4-mini",
+  "stream": true,
+  "tools": [{"type": "web_search"}],
+  "tool_choice": {"type": "web_search"},
+  "input": [
+    {
+      "role": "user",
+      "content": [{"type": "input_text", "text": "Search the web for the official OpenAI homepage and state its domain."}]
+    }
+  ]
+}

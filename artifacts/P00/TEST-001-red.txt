@@ -1,0 +1,7 @@
+missing required file: Makefile
+missing required file: README.md
+missing required file: scripts/README.md
+missing required file: tests/README.md
+missing required file: artifacts/.gitkeep
+missing required file: state/.gitignore
+missing required file: backups/.gitignore

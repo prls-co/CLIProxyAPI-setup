@@ -1,0 +1,1 @@
+TEST-009 and TEST-010 remain green after refactor

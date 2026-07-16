@@ -1,0 +1,8 @@
+ Container cliproxyapi-setup-cloudflared-1  Stopping
+ Container cliproxyapi-setup-cloudflared-1  Stopped
+ Container shaman-api-litellm-1  Running
+ Container shaman-api-litellm-1  Waiting
+ Container shaman-api-litellm-1  Healthy
+ Container shaman-api-cloudflared-1  Starting
+ Container shaman-api-cloudflared-1  Started
+active origin: litellm

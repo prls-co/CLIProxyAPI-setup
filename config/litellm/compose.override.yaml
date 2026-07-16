@@ -1,0 +1,6 @@
+x-cpa-managed: true
+
+services:
+  cloudflared:
+    profiles:
+      - cpa-managed-public

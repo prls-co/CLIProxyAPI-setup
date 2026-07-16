@@ -1,0 +1,29 @@
+{
+  "model": "gpt-5.4-mini",
+  "stream": true,
+  "instructions": "Return only the requested object.",
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "name": "cpa_schema_probe",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sentinel": {
+            "type": "string",
+            "enum": ["STRUCTURED_OUTPUT_ENFORCED"]
+          }
+        },
+        "required": ["sentinel"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "input": [
+    {
+      "role": "user",
+      "content": [{"type": "input_text", "text": "Return the sentinel object."}]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "model": "gpt-5.4-mini",
+  "stream": true,
+  "tools": [{"type": "web_search"}],
+  "tool_choice": {"type": "web_search"},
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "name": "web_schema_probe",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {"domain": {"type": "string"}},
+        "required": ["domain"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "input": [
+    {
+      "role": "user",
+      "content": [{"type": "input_text", "text": "Search the web for the official OpenAI homepage and return its domain."}]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-07-16T19:01:38Z",
+  "active_origin": "cpa",
+  "hashes": {
+    "compose": "225f075b6275b65c318ef47c283d43d851b3d9305636a53e09e4cb71893a7bea",
+    "cpa_config_template": "d3f8b8c7883592d218d83dd94e30ec328f2e5eb9d734526f964639c761a280ed",
+    "systemd_template": "8395289a9062ad72505e57a680bebe99e0bd14918bda012e696d8de4cd843d9c"
+  },
+  "images": {
+    "cpa": "eceasy/cli-proxy-api@sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161",
+    "cpamp": "seakee/cpa-manager-plus@sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351",
+    "cloudflared": "cloudflare/cloudflared@sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9"
+  }
+}

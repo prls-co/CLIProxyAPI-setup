@@ -1,0 +1,7 @@
+{
+  "test": "TEST-007",
+  "status": "red",
+  "collector": "stopped",
+  "correlation_id": "test007-20260716T082809Z-2738116",
+  "reason": "collector is not running"
+}

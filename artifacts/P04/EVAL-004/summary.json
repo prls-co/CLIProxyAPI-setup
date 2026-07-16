@@ -1,0 +1,74 @@
+{
+  "evaluation": "EVAL-004",
+  "status": "pass",
+  "sample_count": 5,
+  "collected_count": 5,
+  "usage_event_completeness": 1.0,
+  "insertion_lag_seconds": {
+    "mean": 0.0028,
+    "standard_deviation": 0.0007483314773547883,
+    "p50": 0.003,
+    "p95": 0.004,
+    "bootstrap_mean_95_ci": [
+      0.0022,
+      0.0034000000000000002
+    ]
+  },
+  "thresholds": {
+    "usage_event_completeness": 1.0,
+    "insertion_lag_p95_seconds": 10
+  },
+  "lag_definition": "max(0, CPAMP created_at_ms - (CPA request timestamp_ms + request latency_ms))",
+  "samples": [
+    {
+      "seed": 6101,
+      "correlation_id": "eval004-6101-20260716T190053Z",
+      "cpamp_request_id": "a502c130",
+      "correlation_method": "serial event-count delta and timestamp window",
+      "timestamp_ms": 1784228453491,
+      "request_latency_ms": 1450,
+      "created_at_ms": 1784228454943,
+      "collection_lag_ms": 2
+    },
+    {
+      "seed": 6102,
+      "correlation_id": "eval004-6102-20260716T190055Z",
+      "cpamp_request_id": "6df1ffe1",
+      "correlation_method": "serial event-count delta and timestamp window",
+      "timestamp_ms": 1784228455043,
+      "request_latency_ms": 1018,
+      "created_at_ms": 1784228456065,
+      "collection_lag_ms": 4
+    },
+    {
+      "seed": 6103,
+      "correlation_id": "eval004-6103-20260716T190056Z",
+      "cpamp_request_id": "c8078feb",
+      "correlation_method": "serial event-count delta and timestamp window",
+      "timestamp_ms": 1784228456148,
+      "request_latency_ms": 8589,
+      "created_at_ms": 1784228464740,
+      "collection_lag_ms": 3
+    },
+    {
+      "seed": 6104,
+      "correlation_id": "eval004-6104-20260716T190105Z",
+      "cpamp_request_id": "499d024f",
+      "correlation_method": "serial event-count delta and timestamp window",
+      "timestamp_ms": 1784228465345,
+      "request_latency_ms": 1356,
+      "created_at_ms": 1784228466703,
+      "collection_lag_ms": 2
+    },
+    {
+      "seed": 6105,
+      "correlation_id": "eval004-6105-20260716T190107Z",
+      "cpamp_request_id": "6d4222df",
+      "correlation_method": "serial event-count delta and timestamp window",
+      "timestamp_ms": 1784228467295,
+      "request_latency_ms": 1012,
+      "created_at_ms": 1784228468310,
+      "collection_lag_ms": 3
+    }
+  ]
+}

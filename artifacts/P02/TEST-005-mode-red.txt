@@ -1,0 +1,2 @@
+ Container cliproxyapi-setup-cli-proxy-api-1  Running
+Codex OAuth auth file mode is 644, expected 600
