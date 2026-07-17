@@ -10,7 +10,7 @@ loadAndApplyRuntimeEnv({ repoRoot: utilityRoot });
 const api = require(utilityRoot);
 
 const modelId = "gpt-5.4-mini";
-const expectedBaseUrl = "https://litellm.prls.co/v1";
+const expectedBaseUrl = "https://cpa.prls.co/v1";
 const schema = {
   type: "object",
   additionalProperties: false,

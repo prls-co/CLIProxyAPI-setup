@@ -6,7 +6,7 @@ umask 077
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
-: "${CPAMP_PUBLIC_URL:=https://litellm.prls.co}"
+: "${CPAMP_PUBLIC_URL:=https://cpa.prls.co}"
 
 admin_key="$(python3 - <<'PY'
 from pathlib import Path

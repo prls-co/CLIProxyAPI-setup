@@ -99,7 +99,10 @@ services:
     networks:
       gateway:
         aliases:
+          - cpa-edge
+          # Retained only for zero-downtime migration from the old shared tunnel.
           - litellm
+      litellm: {}
     logging:
       driver: local
       options:
@@ -179,6 +182,9 @@ services:
 networks:
   gateway:
     name: cliproxyapi-gateway
+  litellm:
+    external: true
+    name: shaman-api_default
 
 volumes:
   cloudflared-token:

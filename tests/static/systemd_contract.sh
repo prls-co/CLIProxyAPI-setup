@@ -11,7 +11,6 @@ required=(
   scripts/systemd-start.sh
   scripts/systemd-stop.sh
   scripts/install-systemd-service.sh
-  config/litellm/compose.override.yaml
   docs/operations.md
 )
 for file in "${required[@]}"; do
@@ -36,19 +35,19 @@ grep -Eq '^NoNewPrivileges=true$' "$unit"
 grep -Fq 'python3 scripts/render-public-config.py' scripts/systemd-start.sh
 grep -Fq 'docker compose up -d cli-proxy-api cpa-manager-plus' scripts/systemd-start.sh
 grep -Fq 'docker compose up -d --force-recreate cpamp-public' scripts/systemd-start.sh
-grep -Fq 'scripts/switch-origin.sh "$origin"' scripts/systemd-start.sh
+grep -Fq 'docker compose --profile public up -d cloudflared' scripts/systemd-start.sh
 grep -Fq 'docker compose --profile public stop cloudflared' scripts/systemd-stop.sh
 grep -Fq 'docker compose stop cpamp-public cpa-manager-plus cli-proxy-api' scripts/systemd-stop.sh
 grep -Fq 'compose.override.yaml' scripts/install-systemd-service.sh
+grep -Fq 'refusing to remove an unmanaged LiteLLM Compose override' scripts/install-systemd-service.sh
 grep -Fq 'systemctl --user enable cliproxyapi-setup.service' scripts/install-systemd-service.sh
 grep -Fq 'scripts/systemd-start.sh' scripts/install-systemd-service.sh
-grep -Eq '^    profiles:$' config/litellm/compose.override.yaml
 
 for phrase in 'device login' 'health' 'contract tests' 'cut over' 'roll back' 'backup' 'restore' 'upgrade' 'incident'; do
   grep -Fqi "$phrase" docs/operations.md || { printf 'operations documentation is missing: %s\n' "$phrase" >&2; exit 1; }
 done
 
-if rg -n 'Bearer [A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{20,}' systemd scripts/systemd-start.sh scripts/systemd-stop.sh scripts/install-systemd-service.sh docs/operations.md config/litellm/compose.override.yaml; then
+if rg -n 'Bearer [A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{20,}' systemd scripts/systemd-start.sh scripts/systemd-stop.sh scripts/install-systemd-service.sh docs/operations.md; then
   printf 'embedded credential found in boot integration\n' >&2
   exit 1
 fi

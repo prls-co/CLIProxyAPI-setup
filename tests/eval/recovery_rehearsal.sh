@@ -28,7 +28,7 @@ CPA_BASE_URL=http://127.0.0.1:8317 \
   CPA_API_KEY_FILE=state/secrets/cpa-api-key \
   MODEL=gpt-5.4-mini \
   bash tests/contract/responses_contract.sh >>"$execution_log" 2>&1
-PUBLIC_BASE_URL=https://litellm.prls.co/v1 \
+PUBLIC_BASE_URL=https://cpa.prls.co/v1 \
   PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key \
   MODEL=gpt-5.4-mini \
   ARTIFACT_DIR="$artifact_dir/final-public-contract" \

@@ -8,7 +8,7 @@ cd "$root"
 # shellcheck source=scripts/lib/public_probe.sh
 source scripts/lib/public_probe.sh
 
-: "${PUBLIC_BASE_URL:=https://litellm.prls.co/v1}"
+: "${PUBLIC_BASE_URL:=https://cpa.prls.co/v1}"
 : "${PUBLIC_API_KEY_FILE:=state/secrets/cpa-api-key}"
 : "${MODEL:=gpt-5.4-mini}"
 : "${ARTIFACT_DIR:=artifacts/P05/TEST-010/post-cutover}"

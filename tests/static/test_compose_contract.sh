@@ -27,7 +27,9 @@ jq -e '.services["cpamp-public"].user == "1000:1000"' "$rendered" >/dev/null
 jq -e '.services["cli-proxy-api"].ports[] | select(.host_ip == "127.0.0.1" and .published == "8317" and .target == 4000)' "$rendered" >/dev/null
 jq -e '.services["cpa-manager-plus"].ports[] | select(.host_ip == "127.0.0.1" and .published == "18317" and .target == 18317)' "$rendered" >/dev/null
 jq -e '.services["cpamp-public"].ports[] | select(.host_ip == "127.0.0.1" and .published == "18417" and .target == 4000)' "$rendered" >/dev/null
-jq -e '.services["cpamp-public"].networks.gateway.aliases | index("litellm")' "$rendered" >/dev/null
+jq -e '.services["cpamp-public"].networks.gateway.aliases | index("cpa-edge")' "$rendered" >/dev/null
+jq -e '.services["cpamp-public"].networks | has("litellm")' "$rendered" >/dev/null
+jq -e '.networks.litellm.external == true and .networks.litellm.name == "shaman-api_default"' "$rendered" >/dev/null
 jq -e '.services.cloudflared.profiles | index("public")' "$rendered" >/dev/null
 jq -e '.services.cloudflared.user == "65532:65532" and .services.cloudflared.read_only == true' "$rendered" >/dev/null
 jq -e '.services.cloudflared.cap_drop | index("ALL")' "$rendered" >/dev/null

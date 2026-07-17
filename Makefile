@@ -28,7 +28,7 @@ test-observability:
 	@CPAMP_BASE_URL=http://127.0.0.1:18317 CPAMP_ADMIN_KEY_FILE=state/secrets/cpamp-admin-key CPA_BASE_URL=http://127.0.0.1:8317 CPA_API_KEY_FILE=state/secrets/cpa-api-key bash tests/integration/cpamp_collection.sh
 
 test-public:
-	@PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh
+	@PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh
 	@bash tests/e2e/public_dashboard.sh
 	@node tests/e2e/utility_llm_shaman.js
 

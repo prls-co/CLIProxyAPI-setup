@@ -12,14 +12,16 @@ old_override="$old_repo/compose.override.yaml"
 [[ -f "$old_repo/compose.yaml" ]] || { printf 'LiteLLM Compose file is unavailable\n' >&2; exit 1; }
 [[ -s "$root/state/active-origin" ]] || { printf 'active-origin marker is unavailable\n' >&2; exit 1; }
 case "$(<"$root/state/active-origin")" in cpa|litellm) ;; *) printf 'invalid active-origin marker\n' >&2; exit 1 ;; esac
-if [[ -f "$old_override" ]] && ! grep -Eq '^x-cpa-managed: true$' "$old_override"; then
-  printf 'refusing to replace an unmanaged LiteLLM Compose override\n' >&2
-  exit 1
+if [[ -f "$old_override" ]]; then
+  grep -Eq '^x-cpa-managed: true$' "$old_override" || {
+    printf 'refusing to remove an unmanaged LiteLLM Compose override\n' >&2
+    exit 1
+  }
+  rm "$old_override"
 fi
 
 install -d -m 0755 "$unit_dir"
-install -m 0644 "$root/config/litellm/compose.override.yaml" "$old_override"
-docker compose -f "$old_repo/compose.yaml" -f "$old_override" config >/dev/null
+docker compose -f "$old_repo/compose.yaml" config >/dev/null
 
 escaped_root="${root//&/\\&}"
 escaped_root="${escaped_root//|/\\|}"

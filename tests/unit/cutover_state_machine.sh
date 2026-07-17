@@ -16,39 +16,14 @@ cat >"$tmp/bin/docker" <<'MOCK'
 set -euo pipefail
 printf 'docker %s\n' "$*" >>"$MOCK_COMMAND_LOG"
 [[ "$1" == compose ]]
-shift
-file=""
-while (($#)); do
-  case "$1" in
-    -f) file="$2"; shift 2 ;;
-    --profile) shift 2 ;;
-    ps)
-      origin=litellm
-      [[ "$file" == *cpa-compose* ]] && origin=cpa
-      if [[ "$(<"$MOCK_STATE_DIR/$origin")" == running ]]; then
-        printf '%s-connector\n' "$origin"
-      fi
-      exit 0
-      ;;
-    stop)
-      origin=litellm
-      [[ "$file" == *cpa-compose* ]] && origin=cpa
-      printf 'stopped' >"$MOCK_STATE_DIR/$origin"
-      exit 0
-      ;;
-    up)
-      origin=litellm
-      other=cpa
-      [[ "$file" == *cpa-compose* ]] && { origin=cpa; other=litellm; }
-      [[ "$(<"$MOCK_STATE_DIR/$other")" == stopped ]] || { printf 'connector overlap attempted\n' >&2; exit 9; }
-      printf 'running' >"$MOCK_STATE_DIR/$origin"
-      [[ "$origin" == litellm ]] && rm -f "$MOCK_STATE_DIR/fail-public"
-      exit 0
-      ;;
-    *) shift ;;
-  esac
-done
-exit 2
+exit 0
+MOCK
+
+cat >"$tmp/bin/render-public" <<'MOCK'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$CPA_PUBLIC_ORIGIN" >"$MOCK_STATE_DIR/edge-origin"
+[[ "$CPA_PUBLIC_ORIGIN" != litellm ]] || rm -f "$MOCK_STATE_DIR/fail-public"
 MOCK
 
 cat >"$tmp/bin/curl" <<'MOCK'
@@ -66,15 +41,13 @@ case "$url" in
   *) printf '{}\n' ;;
 esac
 MOCK
-chmod +x "$tmp/bin/docker" "$tmp/bin/curl"
+chmod +x "$tmp/bin/docker" "$tmp/bin/curl" "$tmp/bin/render-public"
 
 run_case() {
   local name="$1" from="$2" target="$3" expected="$4" failure="${5:-false}"
   local case_dir="$tmp/$name"
   mkdir -p "$case_dir/state"
-  printf stopped >"$case_dir/state/cpa"
-  printf stopped >"$case_dir/state/litellm"
-  printf running >"$case_dir/state/$from"
+  printf '%s\n' "$from" >"$case_dir/state/edge-origin"
   printf '%s\n' "$from" >"$case_dir/active-origin"
   : >"$case_dir/commands.log"
   [[ "$failure" == true ]] && : >"$case_dir/state/fail-public"
@@ -84,9 +57,9 @@ run_case() {
     MOCK_STATE_DIR="$case_dir/state" \
     MOCK_COMMAND_LOG="$case_dir/commands.log" \
     CPA_COMPOSE_FILE="$case_dir/cpa-compose.yaml" \
-    LITELLM_COMPOSE_FILE="$case_dir/litellm-compose.yaml" \
     STATE_FILE="$case_dir/active-origin" \
     LOCK_FILE="$case_dir/switch.lock" \
+    RENDER_PUBLIC_CONFIG="$tmp/bin/render-public" \
     SWITCH_TRACE_FILE="$case_dir/trace.txt" \
     PUBLIC_BASE_URL=https://public.test/v1 \
     PUBLIC_API_KEY_FILE="$tmp/dummy-key" \
@@ -105,10 +78,7 @@ run_case() {
     [[ "$(<"$case_dir/active-origin")" == "$target" ]]
   fi
   diff -u "$expected" "$case_dir/trace.txt"
-  [[ "$(<"$case_dir/state/$target")" == "$([[ "$failure" == true ]] && printf stopped || printf running)" ]]
-  if [[ "$failure" == false ]]; then
-    [[ "$(<"$case_dir/state/$from")" == stopped ]]
-  fi
+  [[ "$(<"$case_dir/state/edge-origin")" == "$([[ "$failure" == true ]] && printf '%s' "$from" || printf '%s' "$target")" ]]
 }
 
 printf 'unit-test-key\n' >"$tmp/dummy-key"
@@ -117,5 +87,5 @@ run_case litellm-success cpa litellm tests/fixtures/cutover/expected-litellm.txt
 run_case cpa-rollback litellm cpa tests/fixtures/cutover/expected-rollback.txt true
 
 mkdir -p artifacts/P05
-printf 'TEST-009 status=pass cases=3 connector_overlap_attempts=0\n' >artifacts/P05/TEST-009-green.txt
+printf 'TEST-009 status=pass cases=3 edge_rollbacks=1\n' >artifacts/P05/TEST-009-green.txt
 printf 'cutover state machine: ok\n'

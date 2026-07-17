@@ -1,9 +1,6 @@
 lock-acquired
 preflight:cpa
-stop:litellm
-confirmed-stopped:litellm
-start:cpa
-confirmed-running:cpa
-confirmed-exclusive:cpa
+render:cpa
+recreate-edge:cpa
 public-probe:cpa
 state-write:cpa

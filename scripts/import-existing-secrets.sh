@@ -17,7 +17,6 @@ source "$source_env"
 set +a
 
 : "${LITELLM_MASTER_KEY:?LITELLM_MASTER_KEY is missing from the source environment}"
-: "${TUNNEL_TOKEN:?TUNNEL_TOKEN is missing from the source environment}"
 
 write_imported_secret() {
   local path="$1"
@@ -34,6 +33,4 @@ write_imported_secret() {
 }
 
 write_imported_secret state/secrets/cpa-api-key "$LITELLM_MASTER_KEY"
-write_imported_secret state/secrets/tunnel-token "$TUNNEL_TOKEN"
-
-unset LITELLM_MASTER_KEY TUNNEL_TOKEN
+unset LITELLM_MASTER_KEY

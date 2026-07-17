@@ -3,14 +3,20 @@
 ## Metadata
 
 - Project name: CLIProxyAPI Setup
-- Version: 1.0.0
+- Version: 1.1.0
 - Owners: Kirill Igumenshchev; implementation agent; operations reviewer
 - Date: 2026-07-16
 - Document ID: CPASETUP-PLAN-001
-- Status: Implemented with the 2026-07-16 authenticated-dashboard amendment
+- Status: Implemented with the 2026-07-16 hostname and authenticated-dashboard amendments
 - Standards tailoring: This plan is informed by ISO/IEC/IEEE 29148 requirements practices, ISO/IEC/IEEE 29119-3 test documentation practices, and ISO/IEC/IEEE 12207 implementation lifecycle practices. It is not a claim of standards certification or safety-critical compliance.
 
-This plan defines a parallel deployment and reversible cutover from the existing LiteLLM ChatGPT-subscription gateway to CLIProxyAPI (CPA) with CPA Manager Plus (CPAMP). The delivered system preserves the existing OpenAI-compatible public base URL, bearer credential, and `gpt-5.4-mini` model contract while fixing the loss of Responses API `text.format` JSON Schema enforcement, preserving `web_search`, recording usage, and retaining LiteLLM as an offline rollback target during stabilization.
+This plan defines a parallel deployment and reversible cutover from the existing LiteLLM ChatGPT-subscription gateway to CLIProxyAPI (CPA) with CPA Manager Plus (CPAMP). The delivered system preserves the bearer credential and `gpt-5.4-mini` model contract while fixing the loss of Responses API `text.format` JSON Schema enforcement, preserving `web_search`, recording usage, and retaining LiteLLM as an online rollback target.
+
+The hostname amendment supersedes the original P05 connector-transfer topology:
+CPA owns `cpa.prls.co`, LiteLLM again owns `litellm.prls.co`, and each service has
+an independent Cloudflare tunnel. Historical P05 steps and evidence describe
+the original shared-hostname cutover; current operations and tests switch only
+the upstream behind `cpa.prls.co` while both connectors remain online.
 
 ## Design consensus and trade-offs
 
@@ -18,11 +24,11 @@ This plan defines a parallel deployment and reversible cutover from the existing
 |---|---|---|
 | CPA versus patching LiteLLM first | DECISION | CPA v7.2.80 preserves the Responses `text` subtree through targeted request mutation. The deployed LiteLLM ChatGPT Responses adapter omits `text` from its allowlist. CPA validation and cutover therefore precede work on LiteLLM issue `kirilligum/litellm-chatgpt#2`. |
 | CPAMP versus CPA Usage Keeper | FOR CPAMP | CPAMP provides usage persistence, request monitoring, quota/account health, and CPA management in one service. CPA Usage Keeper remains active but would add a narrower second operational surface. |
-| Parallel deployment | FOR | CPA and CPAMP must pass local contracts before public traffic moves. LiteLLM remains running without the active tunnel connector so rollback does not require rebuilding it. |
+| Parallel deployment | FOR | CPA, CPAMP, and LiteLLM remain independently reachable. Rollback changes only the `cpa.prls.co` edge upstream and does not move either tunnel connector. |
 | Immutable images | FOR | `eceasy/cli-proxy-api:v7.2.80` resolves to index digest `sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161`; `seakee/cpa-manager-plus:v1.11.2` resolves to `sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351`. Deployment uses digests, not floating tags. |
-| Public hostname and consumer key | DECISION | Preserve `https://litellm.prls.co/v1`, model `gpt-5.4-mini`, and the existing bearer key. This limits consumer changes and permits rollback at the origin. |
-| Cloudflare tunnel routing | DECISION | While CPA is active, the remotely managed tunnel retains `litellm.prls.co -> http://litellm:4000`. The `litellm` alias belongs to an edge sidecar that passes `/v1/*` to CPA and sends other authenticated paths to CPAMP. CPA host access remains `127.0.0.1:8317`. Exactly one old or new connector runs during an API-origin switch. |
-| Management exposure | NATIVE ADMIN-KEY AUTH | CPA host port `8317` and the raw CPAMP host port `18317` remain loopback-only. `https://litellm.prls.co/management.html` loads publicly, while CPAMP itself requires its native admin key for management API access. The key is mirrored into `CPAMP_ADMIN_KEY` in the ignored mode-`0600` `.env`; no second proxy login is configured. This 2026-07-16 operator authorization supersedes the original private-dashboard decision. |
+| Public hostname and consumer key | DECISION | Move the CPA contract to `https://cpa.prls.co/v1`, preserve the model and bearer key, and return `litellm.prls.co` to LiteLLM. |
+| Cloudflare tunnel routing | DECISION | The existing `shaman-litellm` tunnel routes `litellm.prls.co` directly to LiteLLM. The separate `shaman-cpa` tunnel routes `cpa.prls.co` to `cpa-edge`, which passes `/v1/*` to the selected CPA-or-LiteLLM upstream and other paths to CPAMP. Both connectors remain active. |
+| Management exposure | NATIVE ADMIN-KEY AUTH | CPA host port `8317` and the raw CPAMP host port `18317` remain loopback-only. `https://cpa.prls.co/management.html` loads publicly, while CPAMP itself requires its native admin key for management API access. The key is mirrored into `CPAMP_ADMIN_KEY` in the ignored mode-`0600` `.env`; no second proxy login is configured. This 2026-07-16 operator authorization supersedes the original private-dashboard decision. |
 | Subscription authentication | FOR Codex OAuth only | The gateway uses `-codex-device-login` and persisted OAuth auth files. No OpenAI API key provider is configured, preventing accidental per-token billing fallback. |
 | Request mutation | DECISION | Set `disable-image-generation: passthrough`; preserve client tools instead of default image-tool injection. CPA may still force supported Codex transport fields such as streaming and storage behavior. |
 | Schema and web search acceptance | DECISION | Cutover requires strict JSON Schema, stable `web_search`, and their combined use to pass without downstream JSON repair. |
@@ -37,7 +43,7 @@ The current LiteLLM `chatgpt/` Responses adapter reconstructs a valid OpenAI Res
 
 ### Users
 
-- External OpenAI-compatible consumers using `https://litellm.prls.co/v1`.
+- External OpenAI-compatible consumers using `https://cpa.prls.co/v1`.
 - The server operator managing OAuth credentials, quotas, failures, and upgrades.
 - Maintainers diagnosing request transformations and structured-output failures.
 
@@ -52,7 +58,7 @@ The current LiteLLM `chatgpt/` Responses adapter reconstructs a valid OpenAI Res
 
 - Remove schema-loss failures from subscription-backed `gpt-5.4-mini` traffic.
 - Avoid a second analytics-only companion when CPAMP covers the required operations.
-- Keep public cutover and rollback bounded to a single connector transition.
+- Keep public cutover and rollback bounded to a single `cpa-edge` route change.
 - Produce auditable requirements, commands, test evidence, and configuration checkpoints.
 
 ### Success metrics
@@ -68,7 +74,7 @@ The current LiteLLM `chatgpt/` Responses adapter reconstructs a valid OpenAI Res
 ### Scope
 
 - Repository command and test harness.
-- Pinned Docker Compose services for CPA, CPAMP, and the existing Cloudflare tunnel connector.
+- Pinned Docker Compose services for CPA, CPAMP, and the independent CPA Cloudflare tunnel connector.
 - Ignored local state for configuration, auth, secrets, logs, SQLite, and backups.
 - Codex device OAuth and `gpt-5.4-mini` model verification.
 - Responses API contract, observability, cutover, rollback, restart, and recovery tests.
@@ -86,8 +92,8 @@ The current LiteLLM `chatgpt/` Responses adapter reconstructs a valid OpenAI Res
 ### Dependencies
 
 - Docker Engine 29.1.3 and Docker Compose 2.40.3 or compatible later patch versions.
-- Existing `/home/kirill/p/litellm-chatgpt/.env` containing the current bearer key and tunnel token.
-- Existing remotely managed Cloudflare tunnel `shaman-litellm` and its connector token.
+- Existing `/home/kirill/p/litellm-chatgpt/.env` containing the current bearer key and LiteLLM tunnel token.
+- Existing `shaman-litellm` tunnel plus a separately provisioned `shaman-cpa` tunnel and connector token.
 - Interactive ChatGPT/Codex device authorization by the account owner.
 - Internet access to ChatGPT/Codex, Docker registries, and Cloudflare.
 - `bash`, `curl`, `jq`, `openssl`, `python3`, `tar`, `git`, and `docker` on the host.
@@ -95,7 +101,7 @@ The current LiteLLM `chatgpt/` Responses adapter reconstructs a valid OpenAI Res
 ### Risks
 
 - CPA or the subscription backend may reject combined web search and JSON Schema.
-- Two cloudflared connectors could briefly distribute traffic across different gateways.
+- A reused tunnel credential could distribute traffic across the wrong origin; CPA and LiteLLM credentials must remain distinct.
 - OAuth credentials may expire, be revoked, or expose a different model catalog.
 - CPAMP may be healthy while its usage collector is unconfigured or stalled.
 - Copying the consumer key may leak it through shell tracing or logs.
@@ -107,7 +113,7 @@ The current LiteLLM `chatgpt/` Responses adapter reconstructs a valid OpenAI Res
 - The host architecture remains `linux/amd64`.
 - CPA v7.2.80 continues to expose OpenAI-compatible `/v1/models` and `/v1/responses`.
 - CPAMP v1.11.2 supports CPA v7.2.80 and environment-managed connection secrets.
-- The Cloudflare tunnel token remains valid and its remote origin remains `http://litellm:4000`.
+- The two Cloudflare tunnel tokens remain valid and map only their named hostnames to their respective origins.
 - The external consumer accepts forced streaming behavior already used by the current subscription gateway.
 
 ## SRS / canonical requirements
@@ -150,9 +156,9 @@ The current LiteLLM `chatgpt/` Responses adapter reconstructs a valid OpenAI Res
 
 ### Interface/API requirements
 
-- REQ-016 (`int`): The public interface shall remain `https://litellm.prls.co/v1`, bearer authentication, and model `gpt-5.4-mini`.
+- REQ-016 (`int`): The public interface shall remain `https://cpa.prls.co/v1`, bearer authentication, and model `gpt-5.4-mini`.
   - Acceptance criteria: The external consumer contract passes after cutover without URL, key, or model changes.
-- REQ-017 (`int`): Interfaces shall be CPA `http://127.0.0.1:8317`, raw CPAMP `http://127.0.0.1:18317`, authenticated proxy `http://127.0.0.1:18417`, public dashboard `https://litellm.prls.co/management.html`, and private Compose CPA endpoint `http://cli-proxy-api:4000`.
+- REQ-017 (`int`): Interfaces shall be CPA `http://127.0.0.1:8317`, raw CPAMP `http://127.0.0.1:18317`, authenticated proxy `http://127.0.0.1:18417`, public dashboard `https://cpa.prls.co/management.html`, and private Compose CPA endpoint `http://cli-proxy-api:4000`.
   - Acceptance criteria: Expected listeners respond and no management port listens on a non-loopback host address.
 
 ### Data requirements
@@ -193,7 +199,7 @@ flowchart LR
 System Context
 ┌──────────────────────────────────────────────────────────────────┐
 │ External consumer                                                │
-│  HTTPS https://litellm.prls.co/v1, Bearer, gpt-5.4-mini          │
+│  HTTPS https://cpa.prls.co/v1, Bearer, gpt-5.4-mini          │
 └──────────────────────────────┬───────────────────────────────────┘
                                │
 ┌──────────────────────────────▼───────────────────────────────────┐
@@ -747,7 +753,7 @@ concurrency:
     - Requirement link: REQ-003, REQ-012, REQ-016, REQ-019.
     - Verification link: TEST-010.
     - Verification mode: VERIFY.
-    - Command/procedure: `PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh`.
+    - Command/procedure: `PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh`.
     - Expected result: Before cutover the strict schema assertion reproduces the LiteLLM defect; after cutover every assertion exits zero.
     - Evidence produced: Pre-cutover and post-cutover sanitized JSON under `artifacts/P05/TEST-010/`.
     - Stop/escalate condition: Baseline does not identify the current backend or public DNS/tunnel health is already degraded.
@@ -759,7 +765,7 @@ concurrency:
     - Requirement link: REQ-006, REQ-012, REQ-016.
     - Verification link: TEST-010, CHECK-002.
     - Verification mode: GREEN.
-    - Command/procedure: Transition: `bash scripts/switch-origin.sh cpa`; TEST-010 command: `PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh`.
+    - Command/procedure: Transition: `bash scripts/switch-origin.sh cpa`; TEST-010 command: `PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh`.
     - Expected result: Public contract passes through CPA with unchanged URL, key, and model; exactly one connector runs.
     - Evidence produced: `artifacts/P05/cutover.json`, connector IDs/statuses, and TEST-010 green artifacts.
     - Stop/escalate condition: Public probe fails, both connectors run, or external consumer authentication changes.
@@ -771,7 +777,7 @@ concurrency:
     - Requirement link: REQ-006, REQ-012, REQ-014.
     - Verification link: TEST-009, TEST-010.
     - Verification mode: REFACTOR.
-    - Command/procedure: `bash tests/unit/cutover_state_machine.sh && PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh`.
+    - Command/procedure: `bash tests/unit/cutover_state_machine.sh && PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh`.
     - Expected result: Both commands remain green and the shared probe never prints authorization data.
     - Evidence produced: Refactor diff and `artifacts/P05/refactor-tests.txt`.
     - Stop/escalate condition: Extraction weakens mocked transition coverage or schema assertions.
@@ -783,7 +789,7 @@ concurrency:
     - Requirement link: REQ-006, REQ-012, REQ-016.
     - Verification link: EVAL-005.
     - Verification mode: MEASURE.
-    - Command/procedure: `ALLOW_PUBLIC_FAILOVER=1 PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key bash tests/eval/failover_rehearsal.sh`.
+    - Command/procedure: `ALLOW_PUBLIC_FAILOVER=1 PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key bash tests/eval/failover_rehearsal.sh`.
     - Expected result: Four transitions recover within 120 seconds each, no connector overlap is observed, and final origin is CPA.
     - Evidence produced: `artifacts/P05/EVAL-005/summary.json` with mean, standard deviation, and 95% confidence interval.
     - Stop/escalate condition: Environment variable is absent, active user traffic cannot tolerate the rehearsal, or any transition exceeds threshold.
@@ -1090,7 +1096,7 @@ Seeds control fixture ordering and correlation identifiers; the subscription bac
   - type: e2e
   - verifies: REQ-003, REQ-006, REQ-012, REQ-016, REQ-019
   - location: `tests/e2e/public_contract.sh`
-  - command: `PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh`
+  - command: `PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh`
   - fixtures/mocks/data: Basic and strict-schema fixtures; public Cloudflare route.
   - deterministic controls: Serial requests, 180-second timeout, fixed sentinel schema, no client retries.
   - pass_criteria: Health, model catalog, basic stream, schema-valid sentinel, and completed `json_schema` metadata all pass with unchanged public contract.
@@ -1186,7 +1192,7 @@ Seeds control fixture ordering and correlation identifiers; the subscription bac
 - Relevant environment variables:
   - `CPA_BASE_URL=http://127.0.0.1:8317`
   - `CPAMP_BASE_URL=http://127.0.0.1:18317`
-  - `PUBLIC_BASE_URL=https://litellm.prls.co/v1`
+  - `PUBLIC_BASE_URL=https://cpa.prls.co/v1`
   - `MODEL=gpt-5.4-mini`
   - `CPA_API_KEY_FILE=state/secrets/cpa-api-key`
   - `CPAMP_ADMIN_KEY_FILE=state/secrets/cpamp-admin-key`
@@ -1207,11 +1213,11 @@ Seeds control fixture ordering and correlation identifiers; the subscription bac
 | P06 | REQ-009 | TEST-012 | `tests/integration/restart_persistence.sh` | `bash tests/integration/restart_persistence.sh` |
 | P06 | REQ-010 | TEST-011 | `tests/integration/backup_restore.sh` | `bash tests/integration/backup_restore.sh` |
 | P04 | REQ-011 | TEST-007 | `tests/integration/cpamp_collection.sh` | `CPAMP_BASE_URL=http://127.0.0.1:18317 CPAMP_ADMIN_KEY_FILE=state/secrets/cpamp-admin-key CPA_BASE_URL=http://127.0.0.1:8317 CPA_API_KEY_FILE=state/secrets/cpa-api-key bash tests/integration/cpamp_collection.sh` |
-| P05 | REQ-012 | TEST-010 | `tests/e2e/public_contract.sh` | `PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh` |
+| P05 | REQ-012 | TEST-010 | `tests/e2e/public_contract.sh` | `PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh` |
 | P01 | REQ-013 | TEST-002 | `tests/static/test_compose_contract.sh` | `bash tests/static/test_compose_contract.sh` |
 | P00 | REQ-014 | TEST-001 | `tests/static/test_repository_contract.sh` | `bash tests/static/test_repository_contract.sh` |
 | P03 | REQ-015 | TEST-006 | `tests/contract/responses_contract.sh` | `CPA_BASE_URL=http://127.0.0.1:8317 CPA_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/contract/responses_contract.sh` |
-| P05 | REQ-016 | TEST-010 | `tests/e2e/public_contract.sh` | `PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh` |
+| P05 | REQ-016 | TEST-010 | `tests/e2e/public_contract.sh` | `PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key MODEL=gpt-5.4-mini bash tests/e2e/public_contract.sh` |
 | P01 | REQ-017 | TEST-002 | `tests/static/test_compose_contract.sh` | `bash tests/static/test_compose_contract.sh` |
 | P06 | REQ-018 | TEST-011 | `tests/integration/backup_restore.sh` | `bash tests/integration/backup_restore.sh` |
 | P04 | REQ-019 | TEST-007 | `tests/integration/cpamp_collection.sh` | `CPAMP_BASE_URL=http://127.0.0.1:18317 CPAMP_ADMIN_KEY_FILE=state/secrets/cpamp-admin-key CPA_BASE_URL=http://127.0.0.1:8317 CPA_API_KEY_FILE=state/secrets/cpa-api-key bash tests/integration/cpamp_collection.sh` |
@@ -1247,12 +1253,13 @@ Seeds control fixture ordering and correlation identifiers; the subscription bac
 ## Appendix: ADR index
 
 - ADR-001: Use CPA v7.2.80 plus CPAMP v1.11.2 instead of CPA Usage Keeper for the replacement stack.
-- ADR-002: Preserve the existing public hostname, bearer key, and model; switch only tunnel connector ownership.
+- ADR-002: Preserve the bearer key and model while moving CPA to `cpa.prls.co` and returning `litellm.prls.co` to LiteLLM.
 - ADR-003: Pin CPA, CPAMP, and cloudflared by immutable digest.
 - ADR-004: Freeze schema conformance at 100%, CPAMP insertion p95 at 10 seconds, public recovery at 120 seconds, and private recovery at 180 seconds; any change requires a replacement ADR.
 - ADR-005: Use Codex device OAuth only and prohibit OpenAI API-key provider fallback.
 - ADR-006: Set CPA image-generation handling to `passthrough` for non-image Responses requests.
 - ADR-007: Keep LiteLLM source patching outside this repository and track it in `kirilligum/litellm-chatgpt#2`.
+- ADR-008: Use independent `shaman-cpa` and `shaman-litellm` tunnels; switch only the upstream behind the CPA edge.
 
 ## Consistency check
 

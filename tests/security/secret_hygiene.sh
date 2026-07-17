@@ -7,7 +7,7 @@ umask 077
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 
-required_scripts=(scripts/init-state.sh scripts/import-existing-secrets.sh scripts/render-cpa-config.py scripts/render-public-config.py)
+required_scripts=(scripts/init-state.sh scripts/import-existing-secrets.sh scripts/configure-cloudflare.sh scripts/render-cpa-config.py scripts/render-public-config.py)
 for file in "${required_scripts[@]}"; do
   [[ -x "$file" ]] || { printf 'missing executable: %s\n' "$file" >&2; exit 1; }
 done

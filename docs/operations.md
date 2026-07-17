@@ -12,18 +12,23 @@ Initialize state, render configuration, and install the user service:
 bash scripts/init-state.sh
 python3 scripts/render-cpa-config.py
 python3 scripts/render-public-config.py
+bash scripts/configure-cloudflare.sh
 bash scripts/install-systemd-service.sh
 systemctl --user status cliproxyapi-setup.service
 ```
 
-The installer adds a managed LiteLLM Compose override that profiles its old
-cloudflared service out of the legacy system unit's default `compose up`. The
-LiteLLM container remains boot-managed as the local fallback. The new user unit
-starts CPA and CPAMP, reads `state/active-origin`, and starts exactly that
-origin's connector. When CPA is active, the tunnel's existing
-`http://litellm:4000` origin resolves to the authenticated edge sidecar. It
-passes `/v1/*` to CPA unchanged and serves CPAMP at
-`https://litellm.prls.co/management.html`. User lingering must remain enabled (`loginctl show-user
+Cloudflare provisioning requires `CLOUDFLARE_API_TOKEN` in the ignored `.env`
+with Zone Read, DNS Edit, and Cloudflare Tunnel Write. The script creates or
+updates only the `shaman-cpa` tunnel and `cpa.prls.co` DNS record, then stores
+its connector token in ignored mode-`0600` state.
+
+The installer removes only the obsolete, explicitly CPA-managed LiteLLM
+Compose override. The existing system unit independently starts LiteLLM and its
+`shaman-litellm` tunnel at `https://litellm.prls.co`. The CPA user unit starts
+CPA, CPAMP, the `cpa-edge` sidecar, and the separate `shaman-cpa` tunnel at
+`https://cpa.prls.co`. The edge passes `/v1/*` to the origin selected in
+`state/active-origin` and always serves CPAMP at
+`https://cpa.prls.co/management.html`. User lingering must remain enabled (`loginctl show-user
 kirill -p Linger` currently reports `yes`). If the already-running user manager
 predates the operator's Docker group membership, the installer enables the unit
 for the next boot and converges the live stack directly without restarting the
@@ -78,7 +83,7 @@ make test-public
 ```
 
 `make test-public` also runs the real `/home/kirill/p/utility-llm` Shaman
-profile against `https://litellm.prls.co/v1`. The smoke asserts that
+profile against `https://cpa.prls.co/v1`. The smoke asserts that
 `gpt-5.4-mini` uses the Responses interface and succeeds with strict JSON Schema
 and required native `web_search` in the same request.
 
@@ -86,23 +91,24 @@ Run the release evaluations explicitly; public failover is intentionally gated:
 
 ```bash
 make eval
-ALLOW_PUBLIC_FAILOVER=1 PUBLIC_BASE_URL=https://litellm.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key bash tests/eval/failover_rehearsal.sh
+ALLOW_PUBLIC_FAILOVER=1 PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key bash tests/eval/failover_rehearsal.sh
 ```
 
 ## Cut over and roll back
 
-Cut over to CPA or roll back to LiteLLM with the serialized state machine:
+Switch only the API upstream behind `cpa.prls.co` with the serialized state
+machine:
 
 ```bash
 bash scripts/switch-origin.sh cpa
 bash scripts/switch-origin.sh litellm
 ```
 
-Each transition preflights the local target, stops and confirms the other
-connector, starts one connector, performs a bounded public probe, and writes
-`state/active-origin` atomically. A failed public probe restores the prior
-connector and marker. Never start either cloudflared service manually while a
-switch is running.
+Each transition preflights the local target, renders and recreates only the
+`cpa-edge` sidecar, performs a bounded public probe, and writes
+`state/active-origin` atomically. A failed public probe restores the prior edge
+route and marker. The independent CPA and LiteLLM connectors remain running
+throughout the switch.
 
 ## Backup and restore
 
@@ -150,8 +156,8 @@ backup until the new version completes the failover rehearsal.
 
 - Public 5xx: run the local target health test, inspect sanitized recent logs,
   then roll back with `bash scripts/switch-origin.sh litellm` if CPA is suspect.
-- Split connector suspicion: stop both cloudflared services, verify local
-  targets, then run one switch command. Do not alter `active-origin` by hand.
+- CPA tunnel suspicion: verify both public hostnames independently, restart
+  only the affected connector, and do not alter `active-origin` by hand.
 - OAuth failure: keep paid OpenAI providers absent, repeat device login, and
   verify the catalog before moving traffic.
 - Collector stalled: check `/status`, disk space, `usage-statistics-enabled`,

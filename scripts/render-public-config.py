@@ -76,19 +76,30 @@ def main() -> int:
         raise ValueError("CPAMP admin key is empty or has an unexpected format")
     sync_dotenv_key(ENV_PATH, "CPAMP_ADMIN_KEY", admin_key)
 
-    caddyfile = """:4000 {
-\t@openai_api path /v1 /v1/* /healthz /healthz/* /health/liveliness
-\thandle @openai_api {
-\t\treverse_proxy cli-proxy-api:4000
-\t}
+    origin = os.environ.get("CPA_PUBLIC_ORIGIN")
+    if origin is None:
+        origin = (STATE / "active-origin").read_text(encoding="utf-8").strip()
+    upstreams = {
+        "cpa": "cli-proxy-api:4000",
+        "litellm": "litellm:4000",
+    }
+    if origin not in upstreams:
+        raise ValueError("public origin must be exactly cpa or litellm")
+    api_upstream = upstreams[origin]
 
-\thandle {
+    caddyfile = f""":4000 {{
+\t@openai_api path /v1 /v1/* /healthz /healthz/* /health/liveliness
+\thandle @openai_api {{
+\t\treverse_proxy {api_upstream}
+\t}}
+
+\thandle {{
 \t\treverse_proxy cpa-manager-plus:18317
-\t}
-}
+\t}}
+}}
 """
     atomic_write(STATE / "cpamp-public" / "Caddyfile", caddyfile)
-    print("rendered native-admin-key dashboard edge configuration")
+    print(f"rendered {origin} API and native-admin-key dashboard edge configuration")
     return 0
 
 
