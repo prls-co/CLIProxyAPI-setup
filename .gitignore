@@ -7,3 +7,5 @@ artifacts/**/*.raw
 artifacts/**/*.secret
 *.tmp
 __pycache__/
+firebase-debug.log
+.aider*
