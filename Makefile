@@ -10,7 +10,7 @@ test-static:
 	@bash tests/static/systemd_contract.sh
 
 test-unit:
-	@bash tests/unit/cutover_state_machine.sh
+	@bash tests/unit/public_edge_config.sh
 
 test-security:
 	@bash tests/security/secret_hygiene.sh

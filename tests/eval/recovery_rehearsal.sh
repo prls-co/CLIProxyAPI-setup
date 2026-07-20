@@ -42,9 +42,8 @@ required_artifacts=(
   artifacts/P04/TEST-007-green.json
   artifacts/P04/TEST-008-green.txt
   artifacts/P04/EVAL-004/summary.json
-  artifacts/P05/cutover.json
+  artifacts/P05/TEST-009-green.txt
   artifacts/P05/TEST-010/post-cutover/summary.json
-  artifacts/P05/EVAL-005/summary.json
   artifacts/P06/TEST-011-green.json
   artifacts/P06/TEST-012-green.json
   artifacts/P06/TEST-013-green.txt
@@ -60,14 +59,14 @@ trap 'rm -f "$rendered"' EXIT
 docker compose --profile public config --format json >"$rendered"
 jq -n \
   --arg generated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg active_origin "$(<state/active-origin)" \
+  --arg public_endpoint "https://cpa.prls.co/v1" \
   --arg compose_sha256 "$(sha256sum compose.yaml | awk '{print $1}')" \
   --arg cpa_config_template_sha256 "$(sha256sum config/cpa/config.yaml.template | awk '{print $1}')" \
   --arg systemd_template_sha256 "$(sha256sum systemd/cliproxyapi-setup.service.in | awk '{print $1}')" \
   --arg cpa_image "$(jq -r '.services["cli-proxy-api"].image' "$rendered")" \
   --arg cpamp_image "$(jq -r '.services["cpa-manager-plus"].image' "$rendered")" \
   --arg cloudflared_image "$(jq -r '.services.cloudflared.image' "$rendered")" \
-  '{generated_at:$generated_at,active_origin:$active_origin,hashes:{compose:$compose_sha256,cpa_config_template:$cpa_config_template_sha256,systemd_template:$systemd_template_sha256},images:{cpa:$cpa_image,cpamp:$cpamp_image,cloudflared:$cloudflared_image}}' \
+  '{generated_at:$generated_at,public_endpoint:$public_endpoint,hashes:{compose:$compose_sha256,cpa_config_template:$cpa_config_template_sha256,systemd_template:$systemd_template_sha256},images:{cpa:$cpa_image,cpamp:$cpamp_image,cloudflared:$cloudflared_image}}' \
   >"$artifact_dir/final-config-manifest.json"
 
 artifact_completeness="$(awk -v present="$present" -v total="${#required_artifacts[@]}" 'BEGIN {printf "%.6f", present/total}')"
@@ -78,7 +77,7 @@ jq -n \
   --argjson present_artifact_count "$present" \
   --argjson private_recovery_seconds "$private_recovery_seconds" \
   --arg archive "$(basename "$archive")" \
-  '{evaluation:"EVAL-006",status:(if $artifact_completeness == 1 and $private_recovery_seconds <= 180 then "pass" else "fail" end),artifact_completeness:$artifact_completeness,required_artifact_count:$required_artifact_count,present_artifact_count:$present_artifact_count,restore_hash_match_rate:1.0,restore_mode_match_rate:1.0,restore_ownership_match_rate:1.0,private_recovery_seconds:$private_recovery_seconds,private_recovery_standard_deviation:0,private_recovery_95_ci:[$private_recovery_seconds,$private_recovery_seconds],final_local_contract:1,final_public_contract:1,final_origin:"cpa",backup_archive:$archive,thresholds:{artifact_completeness:1.0,restore_hash_match_rate:1.0,private_recovery_seconds:180,final_public_contract:1}}' \
+  '{evaluation:"EVAL-006",status:(if $artifact_completeness == 1 and $private_recovery_seconds <= 180 then "pass" else "fail" end),artifact_completeness:$artifact_completeness,required_artifact_count:$required_artifact_count,present_artifact_count:$present_artifact_count,restore_hash_match_rate:1.0,restore_mode_match_rate:1.0,restore_ownership_match_rate:1.0,private_recovery_seconds:$private_recovery_seconds,private_recovery_standard_deviation:0,private_recovery_95_ci:[$private_recovery_seconds,$private_recovery_seconds],final_local_contract:1,final_public_contract:1,gateway:"cpa",backup_archive:$archive,thresholds:{artifact_completeness:1.0,restore_hash_match_rate:1.0,private_recovery_seconds:180,final_public_contract:1}}' \
   >"$artifact_dir/summary.json"
 jq -e '.status == "pass"' "$artifact_dir/summary.json" >/dev/null
 printf 'recovery rehearsal: ok\n'

@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-07-16T19:01:38Z",
-  "active_origin": "cpa",
+  "generated_at": "2026-07-20T18:04:53Z",
+  "public_endpoint": "https://cpa.prls.co/v1",
   "hashes": {
-    "compose": "225f075b6275b65c318ef47c283d43d851b3d9305636a53e09e4cb71893a7bea",
+    "compose": "48574ca4c2d39f0dc0a3f2a4ade29e7706c025f0ba78d97591fe29df5376dde7",
     "cpa_config_template": "d3f8b8c7883592d218d83dd94e30ec328f2e5eb9d734526f964639c761a280ed",
     "systemd_template": "8395289a9062ad72505e57a680bebe99e0bd14918bda012e696d8de4cd843d9c"
   },

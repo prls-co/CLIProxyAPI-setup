@@ -6,7 +6,10 @@
     "bearer_auth": true,
     "model": "gpt-5.4-mini",
     "basic_stream": true,
-    "strict_json_schema": true
+    "strict_json_schema_streaming": true,
+    "strict_json_schema_nonstreaming": true
   },
-  "correlation_id": "test010-20260716T193313Z-1303659"
+  "cpa_version": "v7.2.80",
+  "cpa_image": "eceasy/cli-proxy-api@sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161",
+  "correlation_id": "test010-20260720T163409Z-2995902"
 }

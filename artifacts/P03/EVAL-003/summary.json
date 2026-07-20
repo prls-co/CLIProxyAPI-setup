@@ -2,8 +2,8 @@
   "strict_schema_conformance_rate": 1.0,
   "combined_search_schema_conformance_rate": 1.0,
   "combined_search_call_rate": 1.0,
-  "max_request_seconds": 7.931,
-  "mean_request_seconds": 2.245,
+  "max_request_seconds": 7.885,
+  "mean_request_seconds": 2.7616,
   "strict_wilson_95_ci": [
     0.7224672001371107,
     0.9999999999999999

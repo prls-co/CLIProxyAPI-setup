@@ -1,12 +1,11 @@
 {
   "test": "TEST-012",
   "status": "pass",
-  "active_origin": "cpa",
   "auth_manifest_sha256": "e4b6aa8b3760dd8c9b74abaa9423c351a341e4e3ff4cdc429a3b84fdda31c801",
   "public_connector_unchanged": true,
-  "connector_id": "b377ef642f2ddc20dea3131ffcadde2c33cea55918c6d6cc747468ddcaa90be7",
-  "events_before": 153,
-  "events_after_restart": 153,
-  "events_final": 154,
+  "connector_id": "15c13a32844c108a95fd0141204fd2979607ac73b0fbdc636ae9200e360866b2",
+  "events_before": 332,
+  "events_after_restart": 332,
+  "events_final": 333,
   "post_restart_collection": true
 }

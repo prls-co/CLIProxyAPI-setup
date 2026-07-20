@@ -38,12 +38,11 @@ grep -Fq 'docker compose up -d --force-recreate cpamp-public' scripts/systemd-st
 grep -Fq 'docker compose --profile public up -d cloudflared' scripts/systemd-start.sh
 grep -Fq 'docker compose --profile public stop cloudflared' scripts/systemd-stop.sh
 grep -Fq 'docker compose stop cpamp-public cpa-manager-plus cli-proxy-api' scripts/systemd-stop.sh
-grep -Fq 'compose.override.yaml' scripts/install-systemd-service.sh
-grep -Fq 'refusing to remove an unmanaged LiteLLM Compose override' scripts/install-systemd-service.sh
+grep -Fq 'docker compose -f "$root/compose.yaml" --profile public config' scripts/install-systemd-service.sh
 grep -Fq 'systemctl --user enable cliproxyapi-setup.service' scripts/install-systemd-service.sh
 grep -Fq 'scripts/systemd-start.sh' scripts/install-systemd-service.sh
 
-for phrase in 'device login' 'health' 'contract tests' 'cut over' 'roll back' 'backup' 'restore' 'upgrade' 'incident'; do
+for phrase in 'device login' 'health' 'contract tests' 'recovery' 'backup' 'restore' 'upgrade' 'incident'; do
   grep -Fqi "$phrase" docs/operations.md || { printf 'operations documentation is missing: %s\n' "$phrase" >&2; exit 1; }
 done
 

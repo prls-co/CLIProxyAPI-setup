@@ -1,0 +1,30 @@
+{
+  "model": "gpt-5.4-mini",
+  "stream": true,
+  "max_output_tokens": 128,
+  "instructions": "Return only the requested object.",
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "name": "cpa_translation_probe",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sentinel": {
+            "type": "string",
+            "enum": ["TEXT_PRESERVED_UNSUPPORTED_FIELD_REMOVED"]
+          }
+        },
+        "required": ["sentinel"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "input": [
+    {
+      "role": "user",
+      "content": [{"type": "input_text", "text": "Return the sentinel object."}]
+    }
+  ]
+}

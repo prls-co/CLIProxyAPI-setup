@@ -13,7 +13,6 @@ auth_manifest() {
 }
 
 admin_key="$(<state/secrets/cpamp-admin-key)"
-active_before="$(<state/active-origin)"
 auth_before="$(auth_manifest)"
 events_before="$(curl -fsS -H "Authorization: Bearer $admin_key" http://127.0.0.1:18317/status | jq '.events')"
 connector_before="$(docker compose --profile public ps --status running -q cloudflared)"
@@ -21,12 +20,10 @@ connector_before="$(docker compose --profile public ps --status running -q cloud
 
 bash scripts/restart-private.sh
 
-active_after="$(<state/active-origin)"
 auth_after="$(auth_manifest)"
 events_after_restart="$(curl -fsS -H "Authorization: Bearer $admin_key" http://127.0.0.1:18317/status | jq '.events')"
 connector_after="$(docker compose --profile public ps --status running -q cloudflared)"
 
-[[ "$active_after" == "$active_before" ]]
 [[ "$auth_after" == "$auth_before" ]]
 [[ "$connector_after" == "$connector_before" ]]
 (( events_after_restart >= events_before ))
@@ -43,13 +40,12 @@ events_final="$(curl -fsS -H "Authorization: Bearer $admin_key" http://127.0.0.1
 (( events_final > events_after_restart ))
 
 jq -n \
-  --arg active_origin "$active_after" \
   --arg auth_manifest_sha256 "$auth_after" \
   --arg connector_id "$connector_after" \
   --argjson events_before "$events_before" \
   --argjson events_after_restart "$events_after_restart" \
   --argjson events_final "$events_final" \
-  '{test:"TEST-012",status:"pass",active_origin:$active_origin,auth_manifest_sha256:$auth_manifest_sha256,public_connector_unchanged:true,connector_id:$connector_id,events_before:$events_before,events_after_restart:$events_after_restart,events_final:$events_final,post_restart_collection:true}' \
+  '{test:"TEST-012",status:"pass",auth_manifest_sha256:$auth_manifest_sha256,public_connector_unchanged:true,connector_id:$connector_id,events_before:$events_before,events_after_restart:$events_after_restart,events_final:$events_final,post_restart_collection:true}' \
   >artifacts/P06/TEST-012-green.json
 
 printf 'service restart persistence: ok\n'

@@ -16,7 +16,7 @@ curl: (56) Recv failure: Connection reset by peer
  Container cliproxyapi-setup-cpa-manager-plus-1  Starting
  Container cliproxyapi-setup-cpa-manager-plus-1  Started
 curl: (56) Recv failure: Connection reset by peer
-rendered authenticated dashboard edge configuration
+rendered CPA API and native-admin-key dashboard edge configuration
  Container cliproxyapi-setup-cpamp-public-1  Recreate
  Container cliproxyapi-setup-cpamp-public-1  Recreated
  Container cliproxyapi-setup-cpamp-public-1  Starting
@@ -27,10 +27,14 @@ CPAMP request collection: ok
 service restart persistence: ok
  Container cliproxyapi-setup-cli-proxy-api-1  Running
 CPA auth and model readiness: ok
-case basic: ok
-case strict-schema: ok
-case web-search: ok
-case web-search-schema: ok
-case client-tools: ok
+case basic: ok http=200 first_byte=0.483303s total=0.867841s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.80 call_id=test006-20260720T180426Z-3847956-basic
+case strict-schema: ok http=200 first_byte=0.908589s total=1.464660s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.80 call_id=test006-20260720T180426Z-3847956-strict-schema
+case strict-schema-nonstreaming: ok http=200 first_byte=1.013528s total=1.013588s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.80 call_id=test006-20260720T180426Z-3847956-strict-schema-nonstreaming
+case translation-filtering: ok http=200 first_byte=0.793604s total=1.383678s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.80 call_id=test006-20260720T180426Z-3847956-translation-filtering
+case web-search: ok http=200 first_byte=0.597084s total=8.907141s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.80 call_id=test006-20260720T180426Z-3847956-web-search
+case web-search-schema: ok http=200 first_byte=0.531019s total=6.603043s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.80 call_id=test006-20260720T180426Z-3847956-web-search-schema
+case client-tools: ok http=200 first_byte=2.156103s total=2.535061s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.80 call_id=test006-20260720T180426Z-3847956-client-tools
 Responses contract: ok
+public case strict-schema: ok http=200 first_byte=0.707419s total=1.393565s call_id=test010-20260720T180449Z-3851513-strict-schema
+public case strict-schema-nonstreaming: ok http=200 first_byte=1.037313s total=1.037391s call_id=test010-20260720T180449Z-3851513-strict-schema-nonstreaming
 public CPA contract: ok

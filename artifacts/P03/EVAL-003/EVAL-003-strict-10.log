@@ -1,2 +1,2 @@
-case strict-schema: ok
+case strict-schema: ok http=200 first_byte=0.391250s total=0.977051s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.80 call_id=EVAL-003-strict-10-strict-schema
 Responses contract: ok

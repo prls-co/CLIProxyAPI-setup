@@ -6,7 +6,8 @@ commands, tickets, or logs.
 
 ## Install and boot ownership
 
-Initialize state, render configuration, and install the user service:
+Initialize state, render configuration, provision the CPA tunnel, and install
+the user service:
 
 ```bash
 bash scripts/init-state.sh
@@ -22,17 +23,12 @@ with Zone Read, DNS Edit, and Cloudflare Tunnel Write. The script creates or
 updates only the `shaman-cpa` tunnel and `cpa.prls.co` DNS record, then stores
 its connector token in ignored mode-`0600` state.
 
-The installer removes only the obsolete, explicitly CPA-managed LiteLLM
-Compose override. The existing system unit independently starts LiteLLM and its
-`shaman-litellm` tunnel at `https://litellm.prls.co`. The CPA user unit starts
-CPA, CPAMP, the `cpa-edge` sidecar, and the separate `shaman-cpa` tunnel at
-`https://cpa.prls.co`. The edge passes `/v1/*` to the origin selected in
-`state/active-origin` and always serves CPAMP at
-`https://cpa.prls.co/management.html`. User lingering must remain enabled (`loginctl show-user
-kirill -p Linger` currently reports `yes`). If the already-running user manager
-predates the operator's Docker group membership, the installer enables the unit
-for the next boot and converges the live stack directly without restarting the
-user manager and disrupting unrelated desktop or worker services.
+The user unit starts CPA, CPA Manager Plus, the `cpa-edge` sidecar, and the
+`shaman-cpa` connector. The edge always passes `/v1/*` directly to CPA and
+serves CPA Manager Plus at `https://cpa.prls.co/management.html`. User lingering
+must remain enabled. If the running user manager predates the operator's Docker
+group membership, the installer enables the unit for the next boot and
+converges the live stack without restarting unrelated user services.
 
 ## Health and status
 
@@ -40,25 +36,24 @@ user manager and disrupting unrelated desktop or worker services.
 docker compose ps
 curl -fsS http://127.0.0.1:8317/healthz
 curl -fsS http://127.0.0.1:18317/health
+curl -fsS https://cpa.prls.co/healthz
 CPAMP_KEY="$(<state/secrets/cpamp-admin-key)"
 curl -fsS -H "Authorization: Bearer $CPAMP_KEY" http://127.0.0.1:18317/status | jq .
 unset CPAMP_KEY
 ```
 
-The public dashboard uses CPAMP's native admin-key login. The renderer mirrors
-`state/secrets/cpamp-admin-key` into `CPAMP_ADMIN_KEY` in the ignored,
-mode-`0600` `.env`. Caddy adds no second authentication layer and does not
-inject authorization; CPAMP itself rejects unauthenticated or invalid API
-requests. Verify this boundary without exposing the key on the process command
-line:
+The public dashboard uses CPA Manager Plus's native admin-key login. The
+renderer mirrors `state/secrets/cpamp-admin-key` into `CPAMP_ADMIN_KEY` in the
+ignored `.env`. Caddy does not add a second authentication layer or inject
+authorization.
 
 ```bash
 bash tests/e2e/public_dashboard.sh
 ```
 
-Healthy CPAMP status has `collector.collector == "running"`, an empty
-`collector.lastError`, and advancing consumption/insertion timestamps after a
-request.
+Healthy collector status has `collector.collector == "running"`, an empty
+`collector.lastError`, and advancing consumption and insertion timestamps after
+a request.
 
 ## Device login
 
@@ -82,37 +77,15 @@ make test-observability
 make test-public
 ```
 
-`make test-public` also runs the real `/home/kirill/p/utility-llm` Shaman
-profile against `https://cpa.prls.co/v1`. The smoke asserts that
-`gpt-5.4-mini` uses the Responses interface and succeeds with strict JSON Schema
-and required native `web_search` in the same request.
-
-Run the release evaluations explicitly; public failover is intentionally gated:
-
-```bash
-make eval
-ALLOW_PUBLIC_FAILOVER=1 PUBLIC_BASE_URL=https://cpa.prls.co/v1 PUBLIC_API_KEY_FILE=state/secrets/cpa-api-key bash tests/eval/failover_rehearsal.sh
-```
-
-## Cut over and roll back
-
-Switch only the API upstream behind `cpa.prls.co` with the serialized state
-machine:
-
-```bash
-bash scripts/switch-origin.sh cpa
-bash scripts/switch-origin.sh litellm
-```
-
-Each transition preflights the local target, renders and recreates only the
-`cpa-edge` sidecar, performs a bounded public probe, and writes
-`state/active-origin` atomically. A failed public probe restores the prior edge
-route and marker. The independent CPA and LiteLLM connectors remain running
-throughout the switch.
+`make test-public` also loads the real `/home/kirill/p/utility-llm` CPA profile
+and requires `gpt-5.4-mini`, streaming and non-streaming Responses, strict JSON
+Schema, and native `web_search`. That test should be run after utility-llm's
+CPA migration is committed and its local runtime credentials use `CPA_API_KEY`.
 
 ## Backup and restore
 
-Create a consistent protected local backup (CPAMP pauses; CPA stays online):
+Create and verify a consistent protected local backup. CPA stays online while
+CPA Manager Plus pauses briefly for the snapshot:
 
 ```bash
 archive="$(bash scripts/backup.sh)"
@@ -121,22 +94,22 @@ unset archive
 ```
 
 Copy mode-`0600` archives from `backups/` to encrypted off-host storage. A live
-restore is an incident action: stop the user unit, validate the archive with
-`restore-test.sh`, extract as root while preserving numeric ownership, replace
-CPA config/auth, CPAMP `usage.sqlite*` plus `data.key`, secrets, and
-`active-origin` as one recovery point, then start the unit and run all local and
-public contracts. Do not restore SQLite without its matching `data.key`.
+restore is an incident action: stop the user unit, validate the archive, extract
+as root while preserving numeric ownership, replace CPA configuration/auth,
+CPA Manager Plus `usage.sqlite*` plus `data.key`, and secrets as one recovery
+point, then start the unit and run local and public contracts. Never restore
+SQLite without its matching `data.key`.
 
 ## Restart and recovery
 
-Recreate only CPA and CPAMP while retaining the public connector identity:
+Recreate CPA and CPA Manager Plus while retaining the public connector:
 
 ```bash
 bash scripts/restart-private.sh
 bash tests/integration/restart_persistence.sh
 ```
 
-For a full service recovery:
+For full service recovery:
 
 ```bash
 systemctl --user restart cliproxyapi-setup.service
@@ -147,21 +120,21 @@ make test-public
 ## Upgrade
 
 Never replace an image digest in place. Record the new tag, index digest,
-release notes, and rollback digest; update `compose.yaml` and the static digest
-assertions together. Render Compose twice, then repeat TEST-002 through TEST-013
-and EVAL-002 through EVAL-006. Keep the previous images and a fresh verified
-backup until the new version completes the failover rehearsal.
+release notes, and previous CPA digest; update `compose.yaml` and the static
+digest assertions together. Render Compose twice, then run all local, contract,
+observability, public, and recovery gates. Keep the previous immutable CPA image
+and a fresh verified backup until the new version passes.
 
 ## Incident response
 
-- Public 5xx: run the local target health test, inspect sanitized recent logs,
-  then roll back with `bash scripts/switch-origin.sh litellm` if CPA is suspect.
-- CPA tunnel suspicion: verify both public hostnames independently, restart
-  only the affected connector, and do not alter `active-origin` by hand.
-- OAuth failure: keep paid OpenAI providers absent, repeat device login, and
-  verify the catalog before moving traffic.
-- Collector stalled: check `/status`, disk space, `usage-statistics-enabled`,
-  and the private management-key mount; do not expose management publicly.
+- Public 5xx: compare local and public health, inspect sanitized recent logs,
+  and restart the CPA stack if local health is degraded.
+- Tunnel failure: confirm local CPA health, inspect the CPA connector, and
+  recreate only `cloudflared` after checking the stored connector token.
+- OAuth failure: keep paid providers absent, repeat device login, and verify the
+  model catalog before restoring traffic.
+- Collector stall: check `/status`, disk space, `usage-statistics-enabled`, and
+  the private management-key mount; do not expose management publicly.
 - Suspected credential disclosure: stop evidence capture, remove unsafe local
   artifacts, rotate the affected credential, re-render CPA, and repeat the
-  security tests.
+  security and public contract tests.

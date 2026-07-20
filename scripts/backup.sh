@@ -36,8 +36,7 @@ for required in \
   state/secrets/cpa-api-key \
   state/secrets/cpa-management-key \
   state/secrets/cpamp-admin-key \
-  state/secrets/tunnel-token \
-  state/active-origin; do
+  state/secrets/tunnel-token; do
   [[ -f "$required" ]] || { printf 'required backup state is unavailable: %s\n' "$required" >&2; exit 1; }
 done
 find state/cpa/auths -maxdepth 1 -type f -name '*.json' -print -quit | grep -q . || { printf 'Codex OAuth state is unavailable\n' >&2; exit 1; }
@@ -57,7 +56,6 @@ docker run --rm --network none \
     mkdir -p /work/payload
     files=(
       state/cpa/config.yaml
-      state/active-origin
       state/cpamp/data/data.key
       state/cpamp/data/usage.sqlite
     )

@@ -15,6 +15,20 @@ ENV_PATH = ROOT / ".env"
 STATE = ROOT / "state"
 
 
+def render_caddyfile() -> str:
+    return """:4000 {
+\t@openai_api path /v1 /v1/* /healthz /healthz/* /health/liveliness
+\thandle @openai_api {
+\t\treverse_proxy cli-proxy-api:4000
+\t}
+
+\thandle {
+\t\treverse_proxy cpa-manager-plus:18317
+\t}
+}
+"""
+
+
 def atomic_write(path: Path, content: str, mode: int = 0o600) -> None:
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     os.chmod(path.parent, 0o700)
@@ -76,30 +90,8 @@ def main() -> int:
         raise ValueError("CPAMP admin key is empty or has an unexpected format")
     sync_dotenv_key(ENV_PATH, "CPAMP_ADMIN_KEY", admin_key)
 
-    origin = os.environ.get("CPA_PUBLIC_ORIGIN")
-    if origin is None:
-        origin = (STATE / "active-origin").read_text(encoding="utf-8").strip()
-    upstreams = {
-        "cpa": "cli-proxy-api:4000",
-        "litellm": "litellm:4000",
-    }
-    if origin not in upstreams:
-        raise ValueError("public origin must be exactly cpa or litellm")
-    api_upstream = upstreams[origin]
-
-    caddyfile = f""":4000 {{
-\t@openai_api path /v1 /v1/* /healthz /healthz/* /health/liveliness
-\thandle @openai_api {{
-\t\treverse_proxy {api_upstream}
-\t}}
-
-\thandle {{
-\t\treverse_proxy cpa-manager-plus:18317
-\t}}
-}}
-"""
-    atomic_write(STATE / "cpamp-public" / "Caddyfile", caddyfile)
-    print(f"rendered {origin} API and native-admin-key dashboard edge configuration")
+    atomic_write(STATE / "cpamp-public" / "Caddyfile", render_caddyfile())
+    print("rendered CPA API and native-admin-key dashboard edge configuration")
     return 0
 
 

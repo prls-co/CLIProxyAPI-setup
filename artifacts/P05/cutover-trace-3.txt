@@ -1,9 +1,0 @@
-lock-acquired
-preflight:cpa
-stop:litellm
-confirmed-stopped:litellm
-start:cpa
-confirmed-running:cpa
-confirmed-exclusive:cpa
-public-probe:cpa
-state-write:cpa

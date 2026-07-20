@@ -1,23 +1,23 @@
 {
   "type": "response.completed",
   "response": {
-    "id": "resp_06de34669d5c2662016a58a0974518819995842da0fde06a69",
+    "id": "resp_002e64f791634b4f016a5e632e0db4819bb3e0ea19c15c38ce",
     "object": "response",
-    "created_at": 1784193175,
+    "created_at": 1784570670,
     "status": "completed",
     "background": false,
-    "completed_at": 1784193175,
+    "completed_at": 1784570670,
     "error": null,
     "frequency_penalty": 0.0,
     "incomplete_details": null,
-    "instructions": null,
+    "instructions": "Return only the requested object.",
     "max_output_tokens": null,
     "max_tool_calls": null,
     "model": "gpt-5.4-mini-2026-03-17",
     "moderation": null,
     "output": [
       {
-        "id": "msg_06de34669d5c2662016a58a097b85881999cb7c92c1d91267f",
+        "id": "msg_002e64f791634b4f016a5e632ebb34819ba24fb04559c49f0b",
         "type": "message",
         "status": "completed",
         "content": [
@@ -25,7 +25,7 @@
             "type": "output_text",
             "annotations": [],
             "logprobs": [],
-            "text": "CPA_AUTH_READY"
+            "text": "{\"sentinel\":\"TEXT_PRESERVED_UNSUPPORTED_FIELD_REMOVED\"}"
           }
         ],
         "phase": "final_answer",
@@ -35,7 +35,7 @@
     "parallel_tool_calls": true,
     "presence_penalty": 0.0,
     "previous_response_id": null,
-    "prompt_cache_key": "9f54ea9d-f0a3-4d84-af4c-6c0a6dee0803",
+    "prompt_cache_key": "30ac849e-0e3b-408c-9f68-cbcd275ab93a",
     "prompt_cache_retention": "24h",
     "reasoning": {
       "context": "current_turn",
@@ -49,7 +49,25 @@
     "temperature": 1.0,
     "text": {
       "format": {
-        "type": "text"
+        "type": "json_schema",
+        "description": null,
+        "name": "cpa_translation_probe",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "sentinel": {
+              "type": "string",
+              "enum": [
+                "TEXT_PRESERVED_UNSUPPORTED_FIELD_REMOVED"
+              ]
+            }
+          },
+          "required": [
+            "sentinel"
+          ],
+          "additionalProperties": false
+        },
+        "strict": true
       },
       "verbosity": "medium"
     },
@@ -77,19 +95,19 @@
     "top_p": 0.98,
     "truncation": "disabled",
     "usage": {
-      "input_tokens": 12,
+      "input_tokens": 59,
       "input_tokens_details": {
         "cache_write_tokens": 0,
         "cached_tokens": 0
       },
-      "output_tokens": 7,
+      "output_tokens": 24,
       "output_tokens_details": {
         "reasoning_tokens": 0
       },
-      "total_tokens": 19
+      "total_tokens": 83
     },
     "user": null,
     "metadata": {}
   },
-  "sequence_number": 10
+  "sequence_number": 21
 }

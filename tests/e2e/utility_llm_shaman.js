@@ -24,15 +24,15 @@ const schema = {
 
 async function main() {
   const model = api.MODEL_CONFIG[modelId];
-  if (!model || model.provider !== "shaman-litellm" || model.apiInferenceType !== "responses") {
-    throw new Error("gpt-5.4-mini is not routed through the Shaman Responses profile");
+  if (!model || model.provider !== "cpa" || model.apiInferenceType !== "responses") {
+    throw new Error("gpt-5.4-mini is not routed through the CPA Responses profile");
   }
   const provider = api.PROVIDER_CONFIG[model.provider];
   if (!provider || provider.baseURL !== expectedBaseUrl) {
     throw new Error(`Shaman base URL mismatch: ${provider && provider.baseURL}`);
   }
-  if (!process.env.SHAMAN_LITELLM_API_KEY) {
-    throw new Error("SHAMAN_LITELLM_API_KEY is unavailable in utility-llm runtime env");
+  if (!process.env.CPA_API_KEY) {
+    throw new Error("CPA_API_KEY is unavailable in utility-llm runtime env");
   }
 
   const result = await api.utilityLLMCall({
@@ -60,7 +60,7 @@ async function main() {
   }
   console.log(JSON.stringify({
     ok: true,
-    profile: "shaman-litellm",
+    profile: "cpa",
     baseURL: expectedBaseUrl,
     model: modelId,
     api: "responses",

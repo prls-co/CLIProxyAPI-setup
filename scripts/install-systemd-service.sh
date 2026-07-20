@@ -6,22 +6,9 @@ umask 077
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 unit_path="$unit_dir/cliproxyapi-setup.service"
-old_repo=/home/kirill/p/litellm-chatgpt
-old_override="$old_repo/compose.override.yaml"
-
-[[ -f "$old_repo/compose.yaml" ]] || { printf 'LiteLLM Compose file is unavailable\n' >&2; exit 1; }
-[[ -s "$root/state/active-origin" ]] || { printf 'active-origin marker is unavailable\n' >&2; exit 1; }
-case "$(<"$root/state/active-origin")" in cpa|litellm) ;; *) printf 'invalid active-origin marker\n' >&2; exit 1 ;; esac
-if [[ -f "$old_override" ]]; then
-  grep -Eq '^x-cpa-managed: true$' "$old_override" || {
-    printf 'refusing to remove an unmanaged LiteLLM Compose override\n' >&2
-    exit 1
-  }
-  rm "$old_override"
-fi
 
 install -d -m 0755 "$unit_dir"
-docker compose -f "$old_repo/compose.yaml" config >/dev/null
+docker compose -f "$root/compose.yaml" --profile public config >/dev/null
 
 escaped_root="${root//&/\\&}"
 escaped_root="${escaped_root//|/\\|}"

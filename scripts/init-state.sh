@@ -40,5 +40,6 @@ write_generated_secret() {
   mv -f "$tmp" "$path"
 }
 
+write_generated_secret state/secrets/cpa-api-key cpa_ 32 128
 write_generated_secret state/secrets/cpa-management-key cpa_mgmt_ 30 72
 write_generated_secret state/secrets/cpamp-admin-key cpamp_ 32 128

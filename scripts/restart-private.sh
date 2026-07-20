@@ -5,10 +5,10 @@ umask 077
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
-lock_file="$root/state/switch-origin.lock"
+lock_file="$root/state/service-operation.lock"
 mkdir -p state
 exec 9>"$lock_file"
-flock -n 9 || { printf 'origin switch or private restart is already in progress\n' >&2; exit 1; }
+flock -n 9 || { printf 'another service operation is already in progress\n' >&2; exit 1; }
 
 connector_before="$(docker compose --profile public ps --status running -q cloudflared)"
 docker compose up -d --no-deps --force-recreate cli-proxy-api
