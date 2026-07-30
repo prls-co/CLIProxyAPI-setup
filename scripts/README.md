@@ -1,9 +1,11 @@
 # Scripts
 
-Operational scripts never enable shell tracing and read credentials from
-mode-restricted files rather than command arguments. The public dashboard
-renderer mirrors CPAMP's native admin key into the ignored mode-`0600` `.env`;
-its generated Caddy configuration remains ignored and mode `0600`.
+Operational scripts never enable shell tracing or pass credentials through
+command arguments. The ignored mode-`0600` `.env.local` is the canonical source
+for manually managed secrets. `init-state.sh` creates missing CPA secrets there
+and maintains protected runtime mirrors under `state/secrets/` for Compose,
+tests, and backup/restore. The generated Caddy configuration remains ignored
+and mode `0600`.
 
 `configure-cloudflare.sh` idempotently creates or updates the independently
 managed `shaman-cpa` tunnel, routes `cpa.prls.co` to the `cpa-edge` sidecar,

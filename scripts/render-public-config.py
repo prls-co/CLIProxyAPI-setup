@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the public edge and mirror CPAMP's native admin key into .env."""
+"""Render the public edge and mirror CPAMP's native admin key into .env.local."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parent.parent
-ENV_PATH = ROOT / ".env"
+ENV_PATH = ROOT / ".env.local"
 STATE = ROOT / "state"
 
 

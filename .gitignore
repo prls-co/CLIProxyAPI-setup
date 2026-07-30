@@ -1,4 +1,5 @@
 .env
+.env.local
 state/*
 !state/.gitignore
 backups/*

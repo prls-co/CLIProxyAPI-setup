@@ -12,6 +12,12 @@ if [[ -f .env ]]; then
   source .env
   set +a
 fi
+if [[ -f .env.local ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env.local
+  set +a
+fi
 
 : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is required}"
 : "${CLOUDFLARE_ZONE_NAME:=prls.co}"
@@ -113,5 +119,8 @@ printf '%s' "$tunnel_token" >"$temporary"
 chmod 600 "$temporary"
 mv -f "$temporary" "$token_path"
 trap - EXIT
+CPA_TUNNEL_TOKEN="$tunnel_token"
+export CPA_TUNNEL_TOKEN
+python3 scripts/sync-local-env.py CPA_TUNNEL_TOKEN
 
 printf 'configured tunnel %s (%s) for https://%s\n' "$CPA_TUNNEL_NAME" "$tunnel_id" "$CPA_PUBLIC_HOSTNAME"

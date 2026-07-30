@@ -12,8 +12,9 @@ This repository owns one public API origin: CPA. Consumer migrations are owned
 by their repositories and coordinated through GitHub issues, including
 [utility-llm issue #15](https://github.com/prls-co/utility-llm/issues/15).
 
-Runtime state, credentials, backups, and generated configuration are
-intentionally untracked.
+`.env.local` is the canonical local source for manually managed credentials.
+Runtime mirrors, OAuth state, backups, and generated configuration are
+intentionally untracked. This deployment does not require GCP Secret Manager.
 
 ## Common operations
 

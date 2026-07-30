@@ -1,8 +1,10 @@
 # Operations runbook
 
-All commands run from `/home/kirill/p/CLIProxyAPI-setup`. Credentials remain in
-`state/secrets/` and the ignored mode-`0600` `.env`; never paste them into
-commands, tickets, or logs.
+All commands run from `/home/kirill/p/CLIProxyAPI-setup`. The ignored
+mode-`0600` `.env.local` is the canonical source for manually managed secrets.
+Protected files under `state/` are generated runtime mirrors or application
+state; never paste either source into commands, tickets, or logs. This setup
+does not use GCP Secret Manager.
 
 ## Install and boot ownership
 
@@ -18,7 +20,7 @@ bash scripts/install-systemd-service.sh
 systemctl --user status cliproxyapi-setup.service
 ```
 
-Cloudflare provisioning requires `CLOUDFLARE_API_TOKEN` in the ignored `.env`
+Cloudflare provisioning requires `CLOUDFLARE_API_TOKEN` in the ignored `.env.local`
 with Zone Read, DNS Edit, and Cloudflare Tunnel Write. The script creates or
 updates only the `shaman-cpa` tunnel and `cpa.prls.co` DNS record, then stores
 its connector token in ignored mode-`0600` state.
@@ -44,7 +46,7 @@ unset CPAMP_KEY
 
 The public dashboard uses CPA Manager Plus's native admin-key login. The
 renderer mirrors `state/secrets/cpamp-admin-key` into `CPAMP_ADMIN_KEY` in the
-ignored `.env`. Caddy does not add a second authentication layer or inject
+ignored `.env.local`. Caddy does not add a second authentication layer or inject
 authorization.
 
 ```bash

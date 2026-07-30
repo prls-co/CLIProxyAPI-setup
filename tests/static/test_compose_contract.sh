@@ -6,7 +6,7 @@ export LC_ALL=C
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 
-for file in compose.yaml .env.example config/cpa/config.yaml.template; do
+for file in compose.yaml .env.example .env.local.example config/cpa/config.yaml.template; do
   [[ -f "$file" ]] || { printf 'missing %s\n' "$file" >&2; exit 1; }
 done
 

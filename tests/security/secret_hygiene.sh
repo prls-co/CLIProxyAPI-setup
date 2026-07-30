@@ -38,19 +38,35 @@ git check-ignore -q state/cpa/config.yaml
 git check-ignore -q state/cpamp/data/usage.sqlite
 git check-ignore -q state/cpamp-public/Caddyfile
 git check-ignore -q .env
+git check-ignore -q .env.local
 [[ "$(stat -c '%a' .env)" == 600 ]] || { printf '.env must be mode 0600\n' >&2; exit 1; }
+[[ "$(stat -c '%a' .env.local)" == 600 ]] || { printf '.env.local must be mode 0600\n' >&2; exit 1; }
 python3 - <<'PY'
 from pathlib import Path
-expected = Path("state/secrets/cpamp-admin-key").read_text(encoding="utf-8").strip()
-values = []
-for raw in Path(".env").read_text(encoding="utf-8").splitlines():
+expected = {
+    "CPA_API_KEY": Path("state/secrets/cpa-api-key").read_text(encoding="utf-8").strip(),
+    "CPA_MANAGEMENT_KEY": Path("state/secrets/cpa-management-key").read_text(encoding="utf-8").strip(),
+    "CPAMP_ADMIN_KEY": Path("state/secrets/cpamp-admin-key").read_text(encoding="utf-8").strip(),
+}
+values = {}
+for raw in Path(".env.local").read_text(encoding="utf-8").splitlines():
     line = raw.strip()
     if line and not line.startswith("#") and "=" in line:
         key, value = line.split("=", 1)
-        if key.strip() == "CPAMP_ADMIN_KEY":
-            values.append(value.strip().strip("\"'"))
-if values != [expected]:
-    raise SystemExit(".env must contain exactly one matching CPAMP_ADMIN_KEY")
+        key = key.strip()
+        if key in expected:
+            if key in values:
+                raise SystemExit(f".env.local contains duplicate {key}")
+            values[key] = value.strip().strip("\"'")
+if values != expected:
+    raise SystemExit(".env.local must contain the canonical CPA secret values")
+
+for raw in Path(".env").read_text(encoding="utf-8").splitlines():
+    line = raw.strip()
+    if line and not line.startswith("#") and "=" in line:
+        key = line.split("=", 1)[0].strip()
+        if key in expected or key in {"CLOUDFLARE_API_TOKEN", "CPA_TUNNEL_TOKEN"}:
+            raise SystemExit(f"secret must not remain in .env: {key}")
 PY
 if grep -Eq 'basic_auth|header_up[[:space:]]+Authorization' state/cpamp-public/Caddyfile; then
   printf 'redundant dashboard authentication found in edge configuration\n' >&2
@@ -78,7 +94,7 @@ for secret_file in "${secret_files[@]}"; do
     case "$candidate" in
       ./.git/*|./state/*|./backups/*|./artifacts/*) continue ;;
     esac
-    if [[ "$secret_file" == state/secrets/cpamp-admin-key && "$candidate" == ./.env ]]; then
+    if [[ "$candidate" == ./.env.local ]]; then
       continue
     fi
     if grep -Fq -- "$secret" "$candidate" 2>/dev/null; then
