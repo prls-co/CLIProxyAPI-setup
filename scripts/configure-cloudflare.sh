@@ -123,4 +123,21 @@ CPA_TUNNEL_TOKEN="$tunnel_token"
 export CPA_TUNNEL_TOKEN
 python3 scripts/sync-local-env.py CPA_TUNNEL_TOKEN
 
+context_path=state/cloudflare/context.json
+mkdir -p "$(dirname "$context_path")"
+chmod 700 "$(dirname "$context_path")"
+context_temporary="$(mktemp "$context_path.tmp.XXXXXX")"
+trap 'rm -f "$temporary" "$context_temporary"' EXIT
+jq -nc \
+  --arg account_id "$account_id" \
+  --arg tunnel_id "$tunnel_id" \
+  --arg tunnel_name "$CPA_TUNNEL_NAME" \
+  --arg public_hostname "$CPA_PUBLIC_HOSTNAME" \
+  --arg origin "$CPA_TUNNEL_ORIGIN" \
+  '{account_id:$account_id,tunnel_id:$tunnel_id,tunnel_name:$tunnel_name,public_hostname:$public_hostname,origin:$origin}' \
+  >"$context_temporary"
+chmod 600 "$context_temporary"
+mv -f "$context_temporary" "$context_path"
+trap - EXIT
+
 printf 'configured tunnel %s (%s) for https://%s\n' "$CPA_TUNNEL_NAME" "$tunnel_id" "$CPA_PUBLIC_HOSTNAME"

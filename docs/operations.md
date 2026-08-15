@@ -8,22 +8,19 @@ does not use GCP Secret Manager.
 
 ## Install and boot ownership
 
-Initialize state, render configuration, provision the CPA tunnel, and install
-the user service:
+Switch the canonical gateway to this machine and install the user service:
 
 ```bash
-bash scripts/init-state.sh
-python3 scripts/render-cpa-config.py
-python3 scripts/render-public-config.py
-bash scripts/configure-cloudflare.sh
+bash scripts/switch-current-machine.sh
 bash scripts/install-systemd-service.sh
 systemctl --user status cliproxyapi-setup.service
 ```
 
-Cloudflare provisioning requires `CLOUDFLARE_API_TOKEN` in the ignored `.env.local`
-with Zone Read, DNS Edit, and Cloudflare Tunnel Write. The script creates or
-updates only the `shaman-cpa` tunnel and `cpa.prls.co` DNS record, then stores
-its connector token in ignored mode-`0600` state.
+The switch requires `CLOUDFLARE_API_TOKEN` in the ignored `.env.local` with Zone
+Read, DNS Edit, and Cloudflare Tunnel Write. It initializes local state, renders
+the configuration, creates or updates only the `shaman-cpa` tunnel and
+`cpa.prls.co` DNS record, then stores the connector token in ignored
+mode-`0600` state.
 
 The user unit starts CPA, CPA Manager Plus, the `cpa-edge` sidecar, and the
 `shaman-cpa` connector. The edge always passes `/v1/*` directly to CPA and
@@ -31,6 +28,24 @@ serves CPA Manager Plus at `https://cpa.prls.co/management.html`. User lingering
 must remain enabled. If the running user manager predates the operator's Docker
 group membership, the installer enables the unit for the next boot and
 converges the live stack without restarting unrelated user services.
+
+## Switch the active machine
+
+Run this from the checkout on the machine that should serve the canonical
+hostname:
+
+```bash
+bash scripts/switch-current-machine.sh
+```
+
+The script verifies the local CPA, Manager Plus, and edge health, reconciles the
+Cloudflare-managed `shaman-cpa` route and `cpa.prls.co` DNS record, starts a new
+local tunnel replica, waits for Cloudflare to register it, and removes the
+previously registered connector IDs. It uses `CLOUDFLARE_API_TOKEN` from the
+ignored `.env.local`; the token must have Zone Read, DNS Edit, and Cloudflare
+Tunnel Write permissions. The script does not make an HTTP request to the
+public hostname. Shut down the previous machine's checkout after switching;
+an old live `cloudflared` process can reconnect after its connector is removed.
 
 ## Health and status
 

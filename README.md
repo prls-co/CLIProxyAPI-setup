@@ -19,7 +19,7 @@ intentionally untracked. This deployment does not require GCP Secret Manager.
 ## Common operations
 
 ```bash
-bash scripts/configure-cloudflare.sh
+bash scripts/switch-current-machine.sh
 bash scripts/restart-private.sh
 bash scripts/backup.sh
 bash scripts/install-systemd-service.sh

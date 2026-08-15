@@ -90,7 +90,10 @@ def main() -> int:
         raise ValueError("CPAMP admin key is empty or has an unexpected format")
     sync_dotenv_key(ENV_PATH, "CPAMP_ADMIN_KEY", admin_key)
 
-    atomic_write(STATE / "cpamp-public" / "Caddyfile", render_caddyfile())
+    # The Caddy container runs as uid 1000, while the checkout owner varies
+    # between machines. This file contains only routing rules, so it must be
+    # world-readable on the bind mount for the fixed container uid to read it.
+    atomic_write(STATE / "cpamp-public" / "Caddyfile", render_caddyfile(), mode=0o644)
     print("rendered CPA API and native-admin-key dashboard edge configuration")
     return 0
 

@@ -7,7 +7,7 @@ umask 077
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 
-required_scripts=(scripts/init-state.sh scripts/configure-cloudflare.sh scripts/render-cpa-config.py scripts/render-public-config.py)
+required_scripts=(scripts/init-state.sh scripts/configure-cloudflare.sh scripts/switch-current-machine.sh scripts/render-cpa-config.py scripts/render-public-config.py)
 for file in "${required_scripts[@]}"; do
   [[ -x "$file" ]] || { printf 'missing executable: %s\n' "$file" >&2; exit 1; }
 done
@@ -22,11 +22,16 @@ secret_files=(
   state/secrets/cpamp-admin-key
   state/secrets/tunnel-token
 )
-for file in "${secret_files[@]}" state/cpa/config.yaml state/cpamp-public/Caddyfile; do
+for file in "${secret_files[@]}" state/cpa/config.yaml; do
   [[ -s "$file" ]] || { printf 'missing generated state file: %s\n' "$file" >&2; exit 1; }
   mode="$(stat -c '%a' "$file")"
   [[ "$mode" == 600 ]] || { printf 'incorrect mode %s for %s\n' "$mode" "$file" >&2; exit 1; }
 done
+[[ -s state/cpamp-public/Caddyfile ]] || { printf 'missing generated Caddyfile\n' >&2; exit 1; }
+[[ "$(stat -c '%a' state/cpamp-public/Caddyfile)" == 644 ]] || {
+  printf 'generated Caddyfile must be mode 644 for the fixed edge uid\n' >&2
+  exit 1
+}
 
 for dir in state state/secrets state/cpa state/cpa/auths state/cpa/logs state/cpamp state/cpamp/data state/cpamp-public; do
   mode="$(stat -c '%a' "$dir")"
