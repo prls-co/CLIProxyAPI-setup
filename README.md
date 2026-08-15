@@ -19,14 +19,55 @@ intentionally untracked. This deployment does not require GCP Secret Manager.
 ## Common operations
 
 ```bash
+bash scripts/bootstrap.sh
 bash scripts/switch-current-machine.sh
 bash scripts/restart-private.sh
 bash scripts/backup.sh
+bash scripts/restore.sh /secure/path/cpa-state-ARCHIVE.tar.gz
 bash scripts/install-systemd-service.sh
 ```
 
 See `docs/operations.md` for device authorization, health, recovery,
 backup/restore, upgrade, and incident procedures.
+
+## Install on a new machine
+
+On a Linux machine with Docker Engine and the Compose plugin installed:
+
+```bash
+git clone git@github.com:prls-co/CLIProxyAPI-setup.git
+cd CLIProxyAPI-setup
+bash scripts/bootstrap.sh
+```
+
+The bootstrap command creates the ignored mode-`0600` `.env.local`, prompts for
+the Cloudflare API token without echoing it, generates local CPA keys, starts
+Codex device login when OAuth state is absent, switches `cpa.prls.co` to this
+machine, and installs the user service. Use `--skip-systemd` when the host is
+managed by another supervisor. The bootstrap command never prints API keys.
+
+## Move the gateway to another machine
+
+For a real migration, clone-only is not enough: the backup preserves the CPA
+keys, Manager Plus database, and Codex subscription state. On the old machine:
+
+```bash
+archive="$(bash scripts/backup.sh)"
+```
+
+Transfer that mode-`0600` archive through encrypted storage. On the new
+machine, clone the repository, create `.env.local` from the example, add the
+Cloudflare API token, and run:
+
+```bash
+bash scripts/restore.sh /secure/path/to/cpa-state-ARCHIVE.tar.gz
+bash scripts/bootstrap.sh --skip-login
+```
+
+The restore validates the archive, keeps a recoverable copy of the previous
+state, and leaves services stopped until bootstrap completes the cutover. Stop
+the old machine's `cloudflared`/Compose stack after the new machine reports
+success; an old live connector can reconnect after Cloudflare cleanup.
 
 ## Verification groups
 

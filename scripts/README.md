@@ -14,6 +14,19 @@ updates the proxied DNS record, stores only the connector token in ignored
 state, and records non-secret tunnel context for cutover automation. Its API
 token needs Zone Read, DNS Edit, and Cloudflare Tunnel Write.
 
+`bootstrap.sh` is the one-command fresh-machine entry point. It creates the
+ignored `.env.local` when needed, prompts for a missing Cloudflare token without
+echoing it, initializes state, performs Codex device login when OAuth state is
+absent, switches the canonical machine, and installs the user service. Use
+`--skip-login` after restoring a state archive and `--skip-systemd` when another
+supervisor owns the host.
+
+`restore.sh` validates and restores an archive produced by `backup.sh`. It
+checks archive traversal safety, manifest hashes and modes, required runtime
+state, and Codex OAuth files in an isolated pinned helper container. It keeps a
+recoverable copy of the existing `state/` directory and leaves services stopped
+so `bootstrap.sh --skip-login` can complete the cutover.
+
 `switch-current-machine.sh` is the canonical repeated-machine cutover. It
 brings up and health-checks this machine's CPA origin and public edge,
 reconciles the tunnel/DNS configuration, starts a fresh `cloudflared` replica,

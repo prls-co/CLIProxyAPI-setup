@@ -7,6 +7,8 @@ test-static:
 	@bash tests/static/test_repository_contract.sh
 	@bash tests/static/test_compose_contract.sh
 	@bash tests/static/test_login_contract.sh
+	@bash tests/static/bootstrap_contract.sh
+	@bash tests/static/restore_contract.sh
 	@bash tests/static/systemd_contract.sh
 	@bash tests/static/switch_current_machine_contract.sh
 
