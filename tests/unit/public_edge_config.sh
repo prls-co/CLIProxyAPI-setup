@@ -24,6 +24,10 @@ if rendered.count("reverse_proxy cpa-manager-plus:18317") != 1:
     raise SystemExit("dashboard must have exactly one management upstream")
 if "@openai_api path /v1 /v1/* /healthz /healthz/* /health/liveliness" not in rendered:
     raise SystemExit("public API route matcher is incomplete")
+if 'header_down X-CPA-Origin-Hostname "' not in rendered:
+    raise SystemExit("public API must identify its serving machine")
+if 'header_down X-CPA-Origin-Hostname "test-origin"' not in module.render_caddyfile("test-origin"):
+    raise SystemExit("public API origin hostname override was not rendered")
 PY
 
 mkdir -p artifacts/P05

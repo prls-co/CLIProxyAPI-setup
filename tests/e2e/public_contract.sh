@@ -16,6 +16,8 @@ source scripts/lib/public_probe.sh
 : "${CORRELATION_ID:=test010-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 
 [[ -s "$PUBLIC_API_KEY_FILE" ]] || { printf 'public API key file is unavailable\n' >&2; exit 1; }
+expected_origin_hostname="$(awk '$1 == "header_down" && $2 == "X-CPA-Origin-Hostname" {gsub(/"/, "", $3); print $3; exit}' state/cpamp-public/Caddyfile)"
+[[ -n "$expected_origin_hostname" ]] || { printf 'public origin hostname is unavailable from generated edge config\n' >&2; exit 1; }
 mkdir -p "$ARTIFACT_DIR"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
@@ -30,17 +32,24 @@ jq --arg model "$MODEL" '{object:(.object // "list"),model_present:(.data | any(
 run_response() {
   local name="$1" fixture="tests/fixtures/responses/$1.json"
   jq --arg model "$MODEL" '.model=$model' "$fixture" >"$tmp/$name.request.json"
-  local metrics http_status first_byte_seconds total_seconds
+  local metrics http_status first_byte_seconds total_seconds origin_hostname
   metrics="$(curl -sS -N --max-time 20 \
     -H "Authorization: Bearer $key" \
     -H 'Content-Type: application/json' \
     -H "X-Client-Request-Id: $CORRELATION_ID-$name" \
     --data-binary @"$tmp/$name.request.json" \
+    -D "$tmp/$name.headers" \
     -o "$tmp/$name.raw" \
     -w $'%{http_code}\t%{time_starttransfer}\t%{time_total}' \
     "$PUBLIC_BASE_URL/responses")"
   IFS=$'\t' read -r http_status first_byte_seconds total_seconds <<<"$metrics"
   [[ "$http_status" == 200 ]] || { printf 'unexpected public HTTP status for %s: %s\n' "$name" "$http_status" >&2; return 1; }
+  origin_hostname="$(awk 'tolower($1) == "x-cpa-origin-hostname:" {gsub("\r", "", $2); print $2; exit}' "$tmp/$name.headers")"
+  [[ "$origin_hostname" == "$expected_origin_hostname" ]] || {
+    printf 'public origin hostname mismatch for %s: expected %s, got %s\n' \
+      "$name" "$expected_origin_hostname" "${origin_hostname:-<missing>}" >&2
+    return 1
+  }
   local completed output_text streaming
   streaming="$(jq -r '.stream' "$tmp/$name.request.json")"
   if [[ "$streaming" == true ]]; then
@@ -76,7 +85,8 @@ jq -n \
   --arg model "$MODEL" \
   --arg cpa_version "$CPA_VERSION" \
   --arg cpa_image "$cpa_image" \
-  '{test:"TEST-010",status:"pass",public_contract:{health_path:$health_path,bearer_auth:true,model:$model,basic_stream:true,strict_json_schema_streaming:true,strict_json_schema_nonstreaming:true},cpa_version:$cpa_version,cpa_image:$cpa_image,correlation_id:$correlation_id}' \
+  --arg origin_hostname "$expected_origin_hostname" \
+  '{test:"TEST-010",status:"pass",public_contract:{health_path:$health_path,bearer_auth:true,model:$model,basic_stream:true,strict_json_schema_streaming:true,strict_json_schema_nonstreaming:true,origin_hostname:$origin_hostname},cpa_version:$cpa_version,cpa_image:$cpa_image,correlation_id:$correlation_id}' \
   >"$ARTIFACT_DIR/summary.json"
 
 printf 'public CPA contract: ok\n'

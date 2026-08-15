@@ -21,3 +21,8 @@ waits for Cloudflare to report that replica, and removes the connector IDs that
 were registered before the switch. It never probes `cpa.prls.co`; a live old
 machine can reconnect after cleanup, so stop the old machine when moving the
 repo.
+
+The generated public edge adds `X-CPA-Origin-Hostname` to API responses. It
+defaults to the hostname of the machine that rendered the edge; set
+`CPA_ORIGIN_HOSTNAME` in `.env.local` when an explicit stable identity is
+preferred.

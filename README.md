@@ -54,7 +54,7 @@ Chat Completions request:
 ```fish
 set -x CPA_API_KEY (string trim < state/secrets/cpa-api-key)
 
-curl https://cpa.prls.co/v1/chat/completions \
+curl -i https://cpa.prls.co/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $CPA_API_KEY" \
   -d '{
@@ -73,4 +73,6 @@ curl https://cpa.prls.co/v1/chat/completions \
 
 The gateway bearer key authenticates CPA; its persisted Codex OAuth state uses
 the ChatGPT subscription. The model name is `gpt-5.6-luna` without a provider
-prefix.
+prefix. The response headers include `X-CPA-Origin-Hostname`, which identifies
+the machine that served the request. Set the optional `CPA_ORIGIN_HOSTNAME` in
+`.env.local` to override the machine hostname used by the edge.

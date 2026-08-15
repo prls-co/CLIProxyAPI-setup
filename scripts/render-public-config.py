@@ -6,6 +6,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import re
+import socket
 import sys
 import tempfile
 
@@ -15,17 +16,27 @@ ENV_PATH = ROOT / ".env.local"
 STATE = ROOT / "state"
 
 
-def render_caddyfile() -> str:
-    return """:4000 {
-\t@openai_api path /v1 /v1/* /healthz /healthz/* /health/liveliness
-\thandle @openai_api {
-\t\treverse_proxy cli-proxy-api:4000
-\t}
+def resolve_origin_hostname() -> str:
+    value = os.environ.get("CPA_ORIGIN_HOSTNAME", "").strip() or socket.gethostname().strip()
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,252}", value):
+        raise ValueError("CPA origin hostname is empty or has an unexpected format")
+    return value
 
-\thandle {
+
+def render_caddyfile(origin_hostname: str | None = None) -> str:
+    origin_hostname = origin_hostname or resolve_origin_hostname()
+    return f""":4000 {{
+\t@openai_api path /v1 /v1/* /healthz /healthz/* /health/liveliness
+\thandle @openai_api {{
+\t\treverse_proxy cli-proxy-api:4000 {{
+\t\t\theader_down X-CPA-Origin-Hostname "{origin_hostname}"
+\t\t}}
+\t}}
+
+\thandle {{
 \t\treverse_proxy cpa-manager-plus:18317
-\t}
-}
+\t}}
+}}
 """
 
 
