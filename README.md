@@ -66,7 +66,7 @@ curl https://cpa.prls.co/v1/chat/completions \
       }
     ],
     "reasoning": {
-      "enabled": true
+      "effort": "low"
     }
   }'
 ```
