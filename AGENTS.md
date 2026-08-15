@@ -16,8 +16,6 @@
 
 ## LLM routing
 
-- Treat `cpa.prls.co` and `shaman.prls.co` as unavailable. Do not call them or
-  use them as fallback endpoints.
 - For normal LLM work, prefer utility-llm with the exact
   `Novita DeepSeek V4 Flash` profile. A direct `Novita DeepSeek V4 Flash` call
   is also acceptable when utility-llm is not the appropriate caller.

@@ -7,24 +7,13 @@ umask 077
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 : "${CPAMP_PUBLIC_URL:=https://cpa.prls.co}"
+: "${CPAMP_ADMIN_KEY_FILE:=state/secrets/cpamp-admin-key}"
 
-admin_key="$(python3 - <<'PY'
-from pathlib import Path
-for raw in Path(".env").read_text(encoding="utf-8").splitlines():
-    line = raw.strip()
-    if not line or line.startswith("#") or "=" not in line:
-        continue
-    key, value = line.split("=", 1)
-    if key.strip() != "CPAMP_ADMIN_KEY":
-        continue
-    value = value.strip()
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
-        value = value[1:-1]
-    print(value, end="")
-    break
-PY
-)"
-[[ -n "$admin_key" ]] || { printf 'CPAMP_ADMIN_KEY is unavailable in .env\n' >&2; exit 1; }
+[[ -s "$CPAMP_ADMIN_KEY_FILE" ]] || {
+  printf 'CPAMP admin key file is unavailable: %s\n' "$CPAMP_ADMIN_KEY_FILE" >&2
+  exit 1
+}
+admin_key="$(<"$CPAMP_ADMIN_KEY_FILE")"
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT

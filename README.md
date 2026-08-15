@@ -45,3 +45,32 @@ make verify
 `make verify` exercises the local deployment. `make test-public` and `make
 eval` include live provider calls and should be run when release evidence is
 required.
+
+## Public subscription smoke check (Fish)
+
+Load the local CPA key into the current Fish session, then run the short public
+Chat Completions request:
+
+```fish
+set -x CPA_API_KEY (string trim < state/secrets/cpa-api-key)
+
+curl https://cpa.prls.co/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $CPA_API_KEY" \
+  -d '{
+    "model": "gpt-5.6-luna",
+    "messages": [
+      {
+        "role": "user",
+        "content": "How many r`s are in the word `strawberry?`"
+      }
+    ],
+    "reasoning": {
+      "enabled": true
+    }
+  }'
+```
+
+The gateway bearer key authenticates CPA; its persisted Codex OAuth state uses
+the ChatGPT subscription. The model name is `gpt-5.6-luna` without a provider
+prefix.
