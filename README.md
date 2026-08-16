@@ -3,8 +3,12 @@
 Pinned, test-gated deployment of CLIProxyAPI (CPA) and CPA Manager Plus for
 the canonical `https://cpa.prls.co/v1` OpenAI-compatible gateway.
 
-The runtime contract is bearer authentication, `gpt-5.4-mini`, and persisted
-Codex OAuth subscription access. No pay-per-token OpenAI provider is configured.
+The runtime contract is bearer authentication and persisted Codex OAuth
+subscription access. Automated local and public contract tests use
+`gpt-5.4-mini` as their acceptance baseline. CPA does not configure a
+server-side default model; each request selects its model. The operator smoke
+check below uses `gpt-5.6-luna` with low reasoning. No pay-per-token OpenAI
+provider is configured.
 CPA Manager Plus is available at `https://cpa.prls.co/management.html` using
 its native admin-key login. All raw service ports remain loopback-only.
 
@@ -32,7 +36,10 @@ backup/restore, upgrade, and incident procedures.
 
 ## Install on a new machine
 
-On a Linux machine with Docker Engine and the Compose plugin installed:
+On a Linux machine with Docker Engine and the Compose plugin installed. The
+bootstrap preflight also requires `curl`, `jq`, Python 3, OpenSSL, `flock`, and
+standard `find`/`timeout` tools. Systemd user tooling is required unless
+`--skip-systemd` is used:
 
 ```bash
 git clone git@github.com:prls-co/CLIProxyAPI-setup.git
@@ -45,6 +52,11 @@ the Cloudflare API token without echoing it, generates local CPA keys, starts
 Codex device login when OAuth state is absent, switches `cpa.prls.co` to this
 machine, and installs the user service. Use `--skip-systemd` when the host is
 managed by another supervisor. The bootstrap command never prints API keys.
+
+The runtime services—CPA, CPA Manager Plus, the Caddy edge, and `cloudflared`—
+run in Docker Compose. Bootstrap, Cloudflare reconciliation, systemd
+integration, and state backup/restore remain host-side because they need access
+to the host Docker daemon, user service manager, and protected local files.
 
 ## Move the gateway to another machine
 

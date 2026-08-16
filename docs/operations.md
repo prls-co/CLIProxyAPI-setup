@@ -24,6 +24,14 @@ connector token in ignored mode-`0600` state. Use `--skip-login` only when
 restored OAuth state is already present; use `--skip-systemd` when another
 supervisor owns the host.
 
+Bootstrap preflights Docker Engine/Compose, `curl`, `jq`, Python 3, OpenSSL,
+`flock`, and standard `find`/`timeout` tools. It also requires systemd user
+tooling unless `--skip-systemd` is used. The runtime services—CPA, CPA Manager
+Plus, the Caddy edge, and `cloudflared`—run in Docker Compose; bootstrap,
+Cloudflare reconciliation, systemd integration, and state backup/restore remain
+host-side because they need the host Docker daemon, user service manager, and
+protected local files.
+
 The user unit starts CPA, CPA Manager Plus, the `cpa-edge` sidecar, and the
 `shaman-cpa` connector. The edge always passes `/v1/*` directly to CPA and
 serves CPA Manager Plus at `https://cpa.prls.co/management.html`. User lingering
@@ -130,6 +138,10 @@ make test-public
 and requires `gpt-5.4-mini`, streaming and non-streaming Responses, strict JSON
 Schema, and native `web_search`. That test should be run after utility-llm's
 CPA migration is committed and its local runtime credentials use `CPA_API_KEY`.
+
+CPA does not set a server-side default model. Each request selects its model;
+`gpt-5.4-mini` is the automated contract-test baseline, while the documented
+public operator smoke check uses `gpt-5.6-luna` with low reasoning.
 
 ## Backup and restore
 
