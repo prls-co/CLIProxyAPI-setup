@@ -5,7 +5,7 @@ umask 077
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
-helper_image='eceasy/cli-proxy-api@sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161'
+helper_image='eceasy/cli-proxy-api@sha256:53162ac4ebf4f399b729a80830ad13e992add2430e1387a54e09a192987f6df3'
 mkdir -p backups
 chmod 700 backups
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"

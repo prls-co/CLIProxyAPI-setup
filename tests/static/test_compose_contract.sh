@@ -14,7 +14,7 @@ rendered="$(mktemp)"
 trap 'rm -f "$rendered"' EXIT
 COMPOSE_PROJECT_NAME=cliproxyapi-test docker compose --profile public config --format json >"$rendered"
 
-cpa_digest='eceasy/cli-proxy-api@sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161'
+cpa_digest='eceasy/cli-proxy-api@sha256:53162ac4ebf4f399b729a80830ad13e992add2430e1387a54e09a192987f6df3'
 cpamp_digest='seakee/cpa-manager-plus@sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351'
 cloudflared_digest='cloudflare/cloudflared@sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9'
 caddy_digest='caddy@sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb'

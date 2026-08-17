@@ -2,8 +2,8 @@
   "render_match_rate": 1,
   "pinned_digest_match_rate": 1,
   "cpa_config_sha256": "4a3a9840c57eb35fee081d5d4d3b5b38f9348b8b9b073bbb91e4b82fcc04b9e2",
-  "compose_sha256": "0f7fb34b4a4c28b08cfd3f6c7b3d8508443b65f16d09cbfb11ddc67a2d4523b1",
-  "cpa_digest": "sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161",
+  "compose_sha256": "d57616811967d2028a061e85f16460de0776673f0b966defcadf96426ba62d85",
+  "cpa_digest": "sha256:53162ac4ebf4f399b729a80830ad13e992add2430e1387a54e09a192987f6df3",
   "cpamp_digest": "sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351",
   "status": "pass"
 }

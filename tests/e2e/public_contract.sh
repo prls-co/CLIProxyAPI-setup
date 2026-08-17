@@ -11,7 +11,7 @@ source scripts/lib/public_probe.sh
 : "${PUBLIC_BASE_URL:=https://cpa.prls.co/v1}"
 : "${PUBLIC_API_KEY_FILE:=state/secrets/cpa-api-key}"
 : "${MODEL:=gpt-5.4-mini}"
-: "${CPA_VERSION:=v7.2.80}"
+: "${CPA_VERSION:=v7.2.135}"
 : "${ARTIFACT_DIR:=artifacts/P05/TEST-010/post-cutover}"
 : "${CORRELATION_ID:=test010-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 

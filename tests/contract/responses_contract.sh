@@ -11,7 +11,7 @@ source scripts/lib/sse.sh
 : "${CPA_BASE_URL:=http://127.0.0.1:8317}"
 : "${CPA_API_KEY_FILE:=state/secrets/cpa-api-key}"
 : "${MODEL:=gpt-5.4-mini}"
-: "${CPA_VERSION:=v7.2.80}"
+: "${CPA_VERSION:=v7.2.135}"
 : "${CASE_FILTER:=}"
 : "${CORRELATION_ID:=test006-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 [[ -s "$CPA_API_KEY_FILE" ]] || { printf 'CPA API key file is unavailable\n' >&2; exit 1; }

@@ -7,16 +7,16 @@
   "restore_hash_match_rate": 1.0,
   "restore_mode_match_rate": 1.0,
   "restore_ownership_match_rate": 1.0,
-  "private_recovery_seconds": 7.432,
+  "private_recovery_seconds": 10.439,
   "private_recovery_standard_deviation": 0,
   "private_recovery_95_ci": [
-    7.432,
-    7.432
+    10.439,
+    10.439
   ],
   "final_local_contract": 1,
   "final_public_contract": 1,
   "gateway": "cpa",
-  "backup_archive": "cpa-state-20260720T180414Z-3844484.tar.gz",
+  "backup_archive": "cpa-state-20260817T183932Z-1040412.tar.gz",
   "thresholds": {
     "artifact_completeness": 1.0,
     "restore_hash_match_rate": 1.0,

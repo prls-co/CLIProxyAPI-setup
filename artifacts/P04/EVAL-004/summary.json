@@ -5,13 +5,13 @@
   "collected_count": 5,
   "usage_event_completeness": 1.0,
   "insertion_lag_seconds": {
-    "mean": 0.0024000000000000002,
-    "standard_deviation": 0.0004898979485566357,
-    "p50": 0.002,
-    "p95": 0.003,
+    "mean": 0.0032,
+    "standard_deviation": 0.0004,
+    "p50": 0.003,
+    "p95": 0.004,
     "bootstrap_mean_95_ci": [
-      0.002,
-      0.0028
+      0.003,
+      0.0036
     ]
   },
   "thresholds": {
@@ -22,52 +22,52 @@
   "samples": [
     {
       "seed": 6101,
-      "correlation_id": "eval004-6101-20260720T180406Z",
-      "cpamp_request_id": "048e515c",
+      "correlation_id": "eval004-6101-20260817T183908Z",
+      "cpamp_request_id": "1e9caea3",
       "correlation_method": "serial event-count delta and timestamp window",
-      "timestamp_ms": 1784570646759,
-      "request_latency_ms": 1157,
-      "created_at_ms": 1784570647918,
-      "collection_lag_ms": 2
+      "timestamp_ms": 1786991948788,
+      "request_latency_ms": 961,
+      "created_at_ms": 1786991949753,
+      "collection_lag_ms": 4
     },
     {
       "seed": 6102,
-      "correlation_id": "eval004-6102-20260720T180408Z",
-      "cpamp_request_id": "dc522642",
+      "correlation_id": "eval004-6102-20260817T183913Z",
+      "cpamp_request_id": "b7433369",
       "correlation_method": "serial event-count delta and timestamp window",
-      "timestamp_ms": 1784570648543,
-      "request_latency_ms": 837,
-      "created_at_ms": 1784570649382,
-      "collection_lag_ms": 2
+      "timestamp_ms": 1786991953372,
+      "request_latency_ms": 978,
+      "created_at_ms": 1786991954353,
+      "collection_lag_ms": 3
     },
     {
       "seed": 6103,
-      "correlation_id": "eval004-6103-20260720T180409Z",
-      "cpamp_request_id": "8cc35eba",
+      "correlation_id": "eval004-6103-20260817T183918Z",
+      "cpamp_request_id": "091396af",
       "correlation_method": "serial event-count delta and timestamp window",
-      "timestamp_ms": 1784570650014,
-      "request_latency_ms": 1010,
-      "created_at_ms": 1784570651027,
+      "timestamp_ms": 1786991958340,
+      "request_latency_ms": 1151,
+      "created_at_ms": 1786991959494,
       "collection_lag_ms": 3
     },
     {
       "seed": 6104,
-      "correlation_id": "eval004-6104-20260720T180411Z",
-      "cpamp_request_id": "5bab242d",
+      "correlation_id": "eval004-6104-20260817T183923Z",
+      "cpamp_request_id": "96142a1e",
       "correlation_method": "serial event-count delta and timestamp window",
-      "timestamp_ms": 1784570651143,
-      "request_latency_ms": 1085,
-      "created_at_ms": 1784570652230,
-      "collection_lag_ms": 2
+      "timestamp_ms": 1786991963047,
+      "request_latency_ms": 891,
+      "created_at_ms": 1786991963941,
+      "collection_lag_ms": 3
     },
     {
       "seed": 6105,
-      "correlation_id": "eval004-6105-20260720T180412Z",
-      "cpamp_request_id": "d20245a4",
+      "correlation_id": "eval004-6105-20260817T183927Z",
+      "cpamp_request_id": "4cb7a130",
       "correlation_method": "serial event-count delta and timestamp window",
-      "timestamp_ms": 1784570652338,
-      "request_latency_ms": 928,
-      "created_at_ms": 1784570653269,
+      "timestamp_ms": 1786991967509,
+      "request_latency_ms": 1634,
+      "created_at_ms": 1786991969146,
       "collection_lag_ms": 3
     }
   ]

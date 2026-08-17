@@ -1,11 +1,11 @@
 {
   "test": "TEST-012",
   "status": "pass",
-  "auth_manifest_sha256": "e4b6aa8b3760dd8c9b74abaa9423c351a341e4e3ff4cdc429a3b84fdda31c801",
+  "auth_manifest_sha256": "62f135a2fa2a0714de918c47a24131fda4a2b1b25bf92094d322d00705c30857",
   "public_connector_unchanged": true,
-  "connector_id": "15c13a32844c108a95fd0141204fd2979607ac73b0fbdc636ae9200e360866b2",
-  "events_before": 332,
-  "events_after_restart": 332,
-  "events_final": 333,
+  "connector_id": "ba02bac6134f94aa41fa315b31c932a410d43bb51737ab4139f65d2a4abfe7b7",
+  "events_before": 26945,
+  "events_after_restart": 26945,
+  "events_final": 26946,
   "post_restart_collection": true
 }
