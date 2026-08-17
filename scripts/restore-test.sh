@@ -29,6 +29,8 @@ docker run --rm --network none \
     [[ -s /restore/manifest.tsv ]]
     checked=0
     while IFS=$'"'"'\t'"'"' read -r path expected_hash expected_mode expected_uid expected_gid expected_size; do
+      case "$path" in .env|state/*) ;; *) printf "unsafe manifest path\n" >&2; exit 1 ;; esac
+      case "$path" in state/secrets/*) printf "obsolete credential mirror in archive\n" >&2; exit 1 ;; esac
       file="/restore/$path"
       [[ -f "$file" ]]
       [[ "$(sha256sum "$file" | awk "{print \$1}")" == "$expected_hash" ]]
@@ -38,5 +40,6 @@ docker run --rm --network none \
       [[ "$(stat -c %s "$file")" == "$expected_size" ]]
       checked=$((checked + 1))
     done </restore/manifest.tsv
+    [[ -s /restore/.env ]]
     printf "{\"test\":\"restore\",\"status\":\"pass\",\"checked_files\":%s,\"hash_match_rate\":1.0,\"mode_match_rate\":1.0,\"ownership_match_rate\":1.0}\n" "$checked"
   '

@@ -1,11 +1,11 @@
 {
   "test": "TEST-011",
   "status": "pass",
-  "archive": "cpa-state-20260817T181544Z-836281.tar.gz",
+  "archive": "cpa-state-20260817T192020Z-1396257.tar.gz",
   "archive_mode": "600",
   "cpa_container_unchanged": true,
-  "events_before": 26901,
-  "events_after": 26901,
-  "manifest_entries": 8,
+  "events_before": 26981,
+  "events_after": 26981,
+  "manifest_entries": 5,
   "isolated_restore_hash_match_rate": 1.0
 }

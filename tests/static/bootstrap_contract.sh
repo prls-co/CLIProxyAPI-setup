@@ -15,7 +15,7 @@ for phrase in \
   'bash scripts/cpa-codex-login.sh' \
   'bash scripts/switch-current-machine.sh' \
   'bash scripts/install-systemd-service.sh' \
-  'python3 scripts/sync-local-env.py CLOUDFLARE_API_TOKEN'; do
+  'python3 scripts/sync-env.py CLOUDFLARE_API_TOKEN'; do
   grep -Fq "$phrase" "$script" || {
     printf 'bootstrap script is missing: %s\n' "$phrase" >&2
     exit 1

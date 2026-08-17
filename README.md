@@ -16,9 +16,11 @@ This repository owns one public API origin: CPA. Consumer migrations are owned
 by their repositories and coordinated through GitHub issues, including
 [utility-llm issue #15](https://github.com/prls-co/utility-llm/issues/15).
 
-`.env.local` is the canonical local source for manually managed credentials.
-Runtime mirrors, OAuth state, backups, and generated configuration are
-intentionally untracked. This deployment does not require GCP Secret Manager.
+`.env` is the single canonical local source for manually managed secrets,
+keys, and configuration variables. It is ignored and must remain mode `0600`.
+`.env.local` and `state/secrets/` are obsolete and unsupported; OAuth state,
+backups, and generated configuration remain derived runtime data. This
+deployment does not require GCP Secret Manager.
 
 ## Common operations
 
@@ -47,7 +49,7 @@ cd CLIProxyAPI-setup
 bash scripts/bootstrap.sh
 ```
 
-The bootstrap command creates the ignored mode-`0600` `.env.local`, prompts for
+The bootstrap command creates the ignored mode-`0600` `.env`, prompts for
 the Cloudflare API token without echoing it, generates local CPA keys, starts
 Codex device login when OAuth state is absent, switches `cpa.prls.co` to this
 machine, and installs the user service. Use `--skip-systemd` when the host is
@@ -68,7 +70,7 @@ archive="$(bash scripts/backup.sh)"
 ```
 
 Transfer that mode-`0600` archive through encrypted storage. On the new
-machine, clone the repository, create `.env.local` from the example, add the
+machine, clone the repository, create `.env` from the example, add the
 Cloudflare API token, and run:
 
 ```bash
@@ -101,11 +103,15 @@ required.
 
 ## Public subscription smoke check (Fish)
 
-Load the local CPA key into the current Fish session, then run the short public
-Chat Completions request:
+Load the local CPA key from the canonical `.env` into the current Fish session,
+then run the short public Chat Completions request:
 
 ```fish
-set -x CPA_API_KEY (string trim < state/secrets/cpa-api-key)
+set -l CPA_API_KEY (grep -h '^CPA_API_KEY=' .env | tail -n1 | string replace -r '^[^=]*=' '')
+test -n "$CPA_API_KEY"; or begin
+    echo 'CPA_API_KEY is missing from .env' >&2
+    exit 1
+end
 
 curl -i https://cpa.prls.co/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -128,4 +134,4 @@ The gateway bearer key authenticates CPA; its persisted Codex OAuth state uses
 the ChatGPT subscription. The model name is `gpt-5.6-luna` without a provider
 prefix. The response headers include `X-CPA-Origin-Hostname`, which identifies
 the machine that served the request. Set the optional `CPA_ORIGIN_HOSTNAME` in
-`.env.local` to override the machine hostname used by the edge.
+`.env` to override the machine hostname used by the edge.

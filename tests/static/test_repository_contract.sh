@@ -9,6 +9,7 @@ cd "$root"
 required_paths=(
   Makefile
   README.md
+  .env.example
   scripts/README.md
   tests/README.md
   artifacts/.gitkeep

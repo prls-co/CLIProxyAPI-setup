@@ -6,11 +6,15 @@ umask 077
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 root="$(repo_root)"
 cd "$root"
-load_local_env
+load_env
+
+if [[ -e state/secrets ]]; then
+  printf 'state/secrets is obsolete; move its values into .env and remove the directory\n' >&2
+  exit 1
+fi
 
 directories=(
   state
-  state/secrets
   state/cpa
   state/cpa/auths
   state/cpa/logs
@@ -21,22 +25,16 @@ directories=(
 mkdir -p "${directories[@]}"
 chmod 700 "${directories[@]}"
 
-ensure_local_secret CPA_API_KEY state/secrets/cpa-api-key cpa_ 32 128
-ensure_local_secret CPA_MANAGEMENT_KEY state/secrets/cpa-management-key cpa_mgmt_ 30 72
-ensure_local_secret CPAMP_ADMIN_KEY state/secrets/cpamp-admin-key cpamp_ 32 128
+ensure_env_secret CPA_API_KEY cpa_ 32 128
+ensure_env_secret CPA_MANAGEMENT_KEY cpa_mgmt_ 30 72
+ensure_env_secret CPAMP_ADMIN_KEY cpamp_ 32 128
 
 secret_variables=(CPA_API_KEY CPA_MANAGEMENT_KEY CPAMP_ADMIN_KEY)
 if [[ -n "${CLOUDFLARE_API_TOKEN:-}" ]]; then
-  export CLOUDFLARE_API_TOKEN
   secret_variables+=(CLOUDFLARE_API_TOKEN)
 fi
-if [[ -z "${CPA_TUNNEL_TOKEN:-}" && -s state/secrets/tunnel-token ]]; then
-  CPA_TUNNEL_TOKEN="$(<state/secrets/tunnel-token)"
-fi
 if [[ -n "${CPA_TUNNEL_TOKEN:-}" ]]; then
-  export CPA_TUNNEL_TOKEN
   secret_variables+=(CPA_TUNNEL_TOKEN)
-  write_runtime_secret_mirror state/secrets/tunnel-token "$CPA_TUNNEL_TOKEN"
 fi
 
-python3 scripts/sync-local-env.py --scrub-base "${secret_variables[@]}"
+python3 scripts/sync-env.py "${secret_variables[@]}"

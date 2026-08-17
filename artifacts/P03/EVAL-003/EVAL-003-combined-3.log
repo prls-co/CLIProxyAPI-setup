@@ -1,2 +1,2 @@
-case web-search-schema: ok http=200 first_byte=0.604675s total=3.736639s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=EVAL-003-combined-3-web-search-schema
+case web-search-schema: ok http=200 first_byte=0.553137s total=3.933772s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=EVAL-003-combined-3-web-search-schema
 Responses contract: ok

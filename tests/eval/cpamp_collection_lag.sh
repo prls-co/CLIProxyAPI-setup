@@ -5,22 +5,22 @@ export LC_ALL=C
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
+# shellcheck source=scripts/lib/common.sh
+source scripts/lib/common.sh
+load_env
 
 : "${CPAMP_BASE_URL:=http://127.0.0.1:18317}"
-: "${CPAMP_ADMIN_KEY_FILE:=state/secrets/cpamp-admin-key}"
-: "${CPA_BASE_URL:=http://127.0.0.1:8317}"
-: "${CPA_API_KEY_FILE:=state/secrets/cpa-api-key}"
+: "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
 : "${MODEL:=gpt-5.4-mini}"
-
-[[ -s "$CPAMP_ADMIN_KEY_FILE" ]] || { printf 'CPAMP admin key file is unavailable\n' >&2; exit 1; }
-[[ -s "$CPA_API_KEY_FILE" ]] || { printf 'CPA API key file is unavailable\n' >&2; exit 1; }
+: "${CPAMP_ADMIN_KEY:?CPAMP_ADMIN_KEY is required in .env}"
+: "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 
 artifact_dir=artifacts/P04/EVAL-004
 mkdir -p "$artifact_dir"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
-admin_key="$(<"$CPAMP_ADMIN_KEY_FILE")"
-api_key="$(<"$CPA_API_KEY_FILE")"
+admin_key="$CPAMP_ADMIN_KEY"
+api_key="$CPA_API_KEY"
 samples="$tmp/samples.ndjson"
 : >"$samples"
 
@@ -42,7 +42,7 @@ for seed in 6101 6102 6103 6104 6105; do
     -H 'Content-Type: application/json' \
     -H "X-Client-Request-Id: $correlation_id" \
     --data-binary @"$tmp/request.json" \
-    "$CPA_BASE_URL/v1/responses" >"$tmp/response-$seed.sse"
+    "$CPA_LOCAL_BASE_URL/v1/responses" >"$tmp/response-$seed.sse"
   grep -q 'response.completed' "$tmp/response-$seed.sse"
 
   deadline=$((SECONDS + 30))

@@ -186,8 +186,8 @@ volumes:
 
 secrets:
   cpamp_admin_key:
-    file: ./state/secrets/cpamp-admin-key
+    environment: CPAMP_ADMIN_KEY
   cpa_management_key:
-    file: ./state/secrets/cpa-management-key
+    environment: CPA_MANAGEMENT_KEY
   tunnel_token:
-    file: ./state/secrets/tunnel-token
+    environment: CPA_TUNNEL_TOKEN

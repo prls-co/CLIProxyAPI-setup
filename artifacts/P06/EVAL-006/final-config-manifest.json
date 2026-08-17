@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-08-17T18:40:11Z",
+  "generated_at": "2026-08-17T19:22:45Z",
   "public_endpoint": "https://cpa.prls.co/v1",
   "hashes": {
-    "compose": "b42ab2e3cec46563db75bcac98b5491c915c0c8679dc06d1c357856d74d3fe5b",
+    "compose": "fa509c173c10027997372f38b0adf15ce5640e220b0c1855d929f576eee4c936",
     "cpa_config_template": "d3f8b8c7883592d218d83dd94e30ec328f2e5eb9d734526f964639c761a280ed",
     "systemd_template": "8395289a9062ad72505e57a680bebe99e0bd14918bda012e696d8de4cd843d9c"
   },

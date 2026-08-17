@@ -11,9 +11,9 @@ cd "$root"
 
 # shellcheck source=scripts/lib/common.sh
 source scripts/lib/common.sh
-load_local_env
+load_env
 
-: "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is required in .env.local}"
+: "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is required in .env}"
 : "${CLOUDFLARE_ZONE_NAME:=prls.co}"
 : "${CPA_TUNNEL_NAME:=shaman-cpa}"
 : "${CPA_PUBLIC_HOSTNAME:=cpa.prls.co}"

@@ -5,9 +5,12 @@ export LC_ALL=C
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
-: "${CPA_BASE_URL:=http://127.0.0.1:8317}"
-: "${CPA_API_KEY_FILE:=state/secrets/cpa-api-key}"
+# shellcheck source=scripts/lib/common.sh
+source scripts/lib/common.sh
+load_env
+: "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
 : "${MODEL:=gpt-5.4-mini}"
+: "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 
 artifact_dir=artifacts/P03/EVAL-003
 mkdir -p "$artifact_dir"
@@ -23,7 +26,7 @@ run_samples() {
     started="$(date +%s%N)"
     set +e
     CASE_FILTER="$case_name" CORRELATION_ID="$correlation" \
-      CPA_BASE_URL="$CPA_BASE_URL" CPA_API_KEY_FILE="$CPA_API_KEY_FILE" MODEL="$MODEL" \
+      CPA_LOCAL_BASE_URL="$CPA_LOCAL_BASE_URL" MODEL="$MODEL" \
       bash tests/contract/responses_contract.sh >"$artifact_dir/$correlation.log" 2>&1
     status=$?
     set -e

@@ -14,10 +14,10 @@ usage() {
 Usage: bash scripts/bootstrap.sh [--skip-login] [--skip-systemd]
 
 Prepare this checkout as the active public CPA machine. The command creates
-the ignored .env.local file when needed, prompts for a missing Cloudflare API
-token without echoing it, initializes local state, performs Codex device login
-when no OAuth state is present, switches the public tunnel, and installs the
-user service.
+the ignored .env file when needed, prompts for a missing Cloudflare API token
+without echoing it, initializes local state, performs Codex device login when
+no OAuth state is present, switches the public tunnel, and installs the user
+service.
 
 --skip-login     Use existing state/cpa/auths without starting device login.
 --skip-systemd   Do not install or start the systemd user service.
@@ -57,25 +57,25 @@ done
 docker compose version >/dev/null
 docker info >/dev/null
 
-[[ -f compose.yaml && -f .env.local.example ]] || {
+[[ -f compose.yaml && -f .env.example ]] || {
   printf 'run this command from the repository checkout\n' >&2
   exit 1
 }
-if [[ -L .env.local || ( -e .env.local && ! -f .env.local ) ]]; then
-  printf 'refusing to use non-regular .env.local\n' >&2
+if [[ -L .env || ( -e .env && ! -f .env ) ]]; then
+  printf 'refusing to use non-regular .env\n' >&2
   exit 1
 fi
-if [[ ! -e .env.local ]]; then
-  install -m 600 .env.local.example .env.local
-  printf 'created ignored .env.local from .env.local.example\n'
+if [[ ! -e .env ]]; then
+  install -m 600 .env.example .env
+  printf 'created ignored .env from .env.example\n'
 fi
-chmod 600 .env.local
+chmod 600 .env
 
-load_local_env
+load_env
 if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
   if [[ ! -t 0 || ! -t 1 ]]; then
-    printf 'CLOUDFLARE_API_TOKEN is missing from .env.local and no interactive terminal is available\n' >&2
-    printf 'add it to .env.local, then rerun this command\n' >&2
+    printf 'CLOUDFLARE_API_TOKEN is missing from .env and no interactive terminal is available\n' >&2
+    printf 'add it to .env, then rerun this command\n' >&2
     exit 1
   fi
   printf 'Cloudflare API token (input hidden): '
@@ -86,7 +86,7 @@ if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
     exit 1
   }
   export CLOUDFLARE_API_TOKEN="$cloudflare_api_token"
-  python3 scripts/sync-local-env.py CLOUDFLARE_API_TOKEN
+  python3 scripts/sync-env.py CLOUDFLARE_API_TOKEN
   unset cloudflare_api_token
 fi
 
@@ -130,4 +130,4 @@ if (( skip_systemd == 0 )); then
 fi
 
 printf 'bootstrap complete for cpa.prls.co\n'
-printf 'CPA API key remains in state/secrets/cpa-api-key; do not print or commit it\n'
+printf 'manual credentials remain only in .env; do not print or commit it\n'

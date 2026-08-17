@@ -56,8 +56,8 @@ fi
 
 temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/cliproxyapi-restore.XXXXXX")"
 state_gitignore="$temporary_directory/state.gitignore"
-local_env_backup="$temporary_directory/env.local"
-local_env_existed=0
+env_backup="$temporary_directory/env"
+env_existed=0
 rollback_path=''
 restore_committed=0
 
@@ -72,24 +72,28 @@ cleanup() {
     printf 'failed restored state was retained at %s\n' "$failed_path" >&2
   fi
   if (( restore_committed == 0 )); then
-    if (( local_env_existed == 1 )); then
-      cp "$local_env_backup" .env.local 2>/dev/null || true
-      chmod 600 .env.local 2>/dev/null || true
+    if (( env_existed == 1 )); then
+      cp "$env_backup" .env 2>/dev/null || true
+      chmod 600 .env 2>/dev/null || true
     else
-      rm -f .env.local 2>/dev/null || true
+      rm -f .env 2>/dev/null || true
     fi
   fi
   rm -rf -- "$temporary_directory"
 }
 trap cleanup EXIT
 
-if [[ -L .env.local || ( -e .env.local && ! -f .env.local ) ]]; then
-  printf 'refusing to use non-regular .env.local\n' >&2
+if [[ -e .env.local ]]; then
+  printf '.env.local is unsupported; move all values to .env and remove it\n' >&2
   exit 1
 fi
-if [[ -f .env.local ]]; then
-  cp .env.local "$local_env_backup"
-  local_env_existed=1
+if [[ -L .env || ( -e .env && ! -f .env ) ]]; then
+  printf 'refusing to use non-regular .env\n' >&2
+  exit 1
+fi
+if [[ -f .env ]]; then
+  cp .env "$env_backup"
+  env_existed=1
 fi
 
 if [[ -f state/.gitignore ]]; then
@@ -124,7 +128,7 @@ docker run --rm --network none --user "$operator_uid:$operator_gid" \
     [[ -s /restore/manifest.tsv ]]
     checked=0
     while IFS="$(printf "\\011")" read -r path expected_hash expected_mode expected_uid expected_gid expected_size; do
-      case "$path" in state/*) ;; *) printf "unsafe manifest path\n" >&2; exit 1 ;; esac
+      case "$path" in .env|state/*) ;; *) printf "unsafe manifest path\n" >&2; exit 1 ;; esac
       file="/restore/$path"
       [[ -f "$file" && ! -L "$file" ]]
       actual_hash="$(sha256sum "$file")"
@@ -136,13 +140,10 @@ docker run --rm --network none --user "$operator_uid:$operator_gid" \
     done </restore/manifest.tsv
     (( checked > 0 ))
     for required in \
+      .env \
       state/cpa/config.yaml \
       state/cpamp/data/data.key \
-      state/cpamp/data/usage.sqlite \
-      state/secrets/cpa-api-key \
-      state/secrets/cpa-management-key \
-      state/secrets/cpamp-admin-key \
-      state/secrets/tunnel-token; do
+      state/cpamp/data/usage.sqlite; do
       [[ -s "/restore/$required" ]]
     done
     find /restore/state/cpa/auths -maxdepth 1 -type f -name "*.json" -print -quit | grep -q .
@@ -171,15 +172,10 @@ fi
 mkdir -m 700 state
 cp "$state_gitignore" state/.gitignore
 cp -a "$temporary_directory/state/." state/
+cp "$temporary_directory/.env" .env
+chmod 600 .env
 find state -type d -exec chmod 700 {} +
-find state/secrets -maxdepth 1 -type f -exec chmod 600 {} +
 chmod 600 state/cpa/config.yaml
-
-export CPA_API_KEY="$(<state/secrets/cpa-api-key)"
-export CPA_MANAGEMENT_KEY="$(<state/secrets/cpa-management-key)"
-export CPAMP_ADMIN_KEY="$(<state/secrets/cpamp-admin-key)"
-export CPA_TUNNEL_TOKEN="$(<state/secrets/tunnel-token)"
-python3 scripts/sync-local-env.py CPA_API_KEY CPA_MANAGEMENT_KEY CPAMP_ADMIN_KEY CPA_TUNNEL_TOKEN
 
 restore_committed=1
 printf 'state restore complete\n'

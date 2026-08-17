@@ -1,12 +1,12 @@
 {
   "type": "response.completed",
   "response": {
-    "id": "resp_04fce8448a383845016a834ffe65b4819a95d5022bdee8fd30",
+    "id": "resp_0df7e374a80f5466016a835ff5b278819a8ed47523f3250666",
     "object": "response",
-    "created_at": 1786990590,
+    "created_at": 1786994677,
     "status": "completed",
     "background": false,
-    "completed_at": 1786990590,
+    "completed_at": 1786994678,
     "error": null,
     "frequency_penalty": 0.0,
     "incomplete_details": null,
@@ -17,7 +17,7 @@
     "moderation": null,
     "output": [
       {
-        "id": "msg_04fce8448a383845016a834ffece0c819ab89caff87e9eb988",
+        "id": "msg_0df7e374a80f5466016a835ff62344819ab64a2da773858b8d",
         "type": "message",
         "status": "completed",
         "content": [

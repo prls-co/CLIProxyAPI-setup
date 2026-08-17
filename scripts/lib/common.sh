@@ -15,36 +15,25 @@ secure_file_mode() {
   chmod 600 "$path"
 }
 
-load_local_env() {
-  local root file restore_allexport=0
+load_env() {
+  local root restore_allexport=0
   root="$(repo_root)"
+  [[ -f "$root/.env" ]] || { printf 'required environment file is unavailable: %s/.env\n' "$root" >&2; return 1; }
+  if [[ -e "$root/.env.local" ]]; then
+    printf '.env.local is unsupported; move all values to .env and remove it\n' >&2
+    return 1
+  fi
   [[ $- == *a* ]] && restore_allexport=1
   set -a
-  for file in "$root/.env" "$root/.env.local"; do
-    if [[ -f "$file" ]]; then
-      # shellcheck disable=SC1090
-      source "$file"
-    fi
-  done
+  # shellcheck disable=SC1091
+  source "$root/.env"
   (( restore_allexport == 1 )) || set +a
 }
 
-write_runtime_secret_mirror() {
-  local path="$1" value="$2"
-  local temporary
-  temporary="$(mktemp "${path}.tmp.XXXXXX")"
-  printf '%s' "$value" >"$temporary"
-  secure_file_mode "$temporary"
-  mv -f "$temporary" "$path"
-}
-
-ensure_local_secret() {
-  local variable="$1" path="$2" prefix="$3" random_bytes="$4" max_length="$5"
+ensure_env_secret() {
+  local variable="$1" prefix="$2" random_bytes="$3" max_length="$4"
   local value="${!variable:-}"
 
-  if [[ -z "$value" && -s "$path" ]]; then
-    value="$(<"$path")"
-  fi
   if [[ -z "$value" ]]; then
     value="${prefix}$(openssl rand -hex "$random_bytes")"
   fi
@@ -55,5 +44,5 @@ ensure_local_secret() {
 
   printf -v "$variable" '%s' "$value"
   export "$variable"
-  write_runtime_secret_mirror "$path" "$value"
+  python3 "$(repo_root)/scripts/sync-env.py" "$variable"
 }

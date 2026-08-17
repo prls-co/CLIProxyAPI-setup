@@ -3,9 +3,9 @@
   "status": "pass",
   "auth_manifest_sha256": "62f135a2fa2a0714de918c47a24131fda4a2b1b25bf92094d322d00705c30857",
   "public_connector_unchanged": true,
-  "connector_id": "ba02bac6134f94aa41fa315b31c932a410d43bb51737ab4139f65d2a4abfe7b7",
-  "events_before": 26945,
-  "events_after_restart": 26945,
-  "events_final": 26946,
+  "connector_id": "55ae2bebc096c63e7aef2c64287c0d6f72c86d50905be539f7952a520d180d2b",
+  "events_before": 27010,
+  "events_after_restart": 27010,
+  "events_final": 27011,
   "post_restart_collection": true
 }

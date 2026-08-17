@@ -2,11 +2,35 @@
 // TEST-015: real utility-llm -> Shaman -> CPA structured web-search smoke.
 "use strict";
 
+const fs = require("fs");
 const path = require("path");
 
+function loadDotEnv(filePath) {
+  const values = new Map();
+  for (const [index, rawLine] of fs.readFileSync(filePath, "utf8").split(/\r?\n/).entries()) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const match = line.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/);
+    if (!match) throw new Error(`invalid .env assignment at ${filePath}:${index + 1}`);
+    const [, key, rawValue] = match;
+    if (values.has(key)) throw new Error(`duplicate .env variable: ${key}`);
+    let value = rawValue.trim();
+    if (value.startsWith("'") && value.endsWith("'")) {
+      value = value.slice(1, -1).replaceAll("'\"'\"'", "'");
+    } else if (value.startsWith('"') && value.endsWith('"')) {
+      value = value.slice(1, -1).replaceAll('\\"', '"').replaceAll('\\\\', '\\');
+    }
+    values.set(key, value);
+  }
+  for (const [key, value] of values) process.env[key] = value;
+}
+
+const setupRoot = path.join(__dirname, "..", "..");
+loadDotEnv(path.join(setupRoot, ".env"));
 const utilityRoot = process.env.UTILITY_LLM_ROOT || "/home/kirill/p/utility-llm";
 const { loadAndApplyRuntimeEnv } = require(path.join(utilityRoot, "dev/runtime-env"));
 loadAndApplyRuntimeEnv({ repoRoot: utilityRoot });
+loadDotEnv(path.join(setupRoot, ".env"));
 const api = require(utilityRoot);
 
 const modelId = "gpt-5.4-mini";

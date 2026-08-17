@@ -11,6 +11,8 @@ script=scripts/restore.sh
 bash -n "$script"
 
 for phrase in \
+  '.env' \
+  '.env.local is unsupported' \
   '--network none' \
   'tar -tzf /backup/archive.tar.gz' \
   'unsafe archive path' \
@@ -24,6 +26,11 @@ for phrase in \
     exit 1
   }
 done
+
+if grep -Eq 'state/secrets|sync-local-env|CPA_API_KEY_FILE' "$script"; then
+  printf 'restore script contains obsolete credential storage\n' >&2
+  exit 1
+fi
 
 if grep -Eq 'set[[:space:]]+-x|set[[:space:]]+-eux|set[[:space:]]+-ex' "$script"; then
   printf 'shell tracing is forbidden in restore script\n' >&2

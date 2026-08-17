@@ -5,6 +5,9 @@ export LC_ALL=C
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
+# shellcheck source=scripts/lib/common.sh
+source scripts/lib/common.sh
+load_env
 mkdir -p artifacts/P06
 [[ -x scripts/restart-private.sh ]] || { printf 'private restart implementation is unavailable\n' >&2; exit 1; }
 
@@ -12,7 +15,8 @@ auth_manifest() {
   find state/cpa/auths -maxdepth 1 -type f -name '*.json' -printf '%f\t%m\t' -exec sha256sum {} \; | sort | sha256sum | awk '{print $1}'
 }
 
-admin_key="$(<state/secrets/cpamp-admin-key)"
+: "${CPAMP_ADMIN_KEY:?CPAMP_ADMIN_KEY is required in .env}"
+admin_key="$CPAMP_ADMIN_KEY"
 auth_before="$(auth_manifest)"
 events_before="$(curl -fsS -H "Authorization: Bearer $admin_key" http://127.0.0.1:18317/status | jq '.events')"
 connector_before="$(docker compose --profile public ps --status running -q cloudflared)"
@@ -28,11 +32,7 @@ connector_after="$(docker compose --profile public ps --status running -q cloudf
 [[ "$connector_after" == "$connector_before" ]]
 (( events_after_restart >= events_before ))
 
-CPAMP_BASE_URL=http://127.0.0.1:18317 \
-  CPAMP_ADMIN_KEY_FILE=state/secrets/cpamp-admin-key \
-  CPA_BASE_URL=http://127.0.0.1:8317 \
-  CPA_API_KEY_FILE=state/secrets/cpa-api-key \
-  ARTIFACT_PATH=artifacts/P06/TEST-012-post-restart-collection.json \
+ARTIFACT_PATH=artifacts/P06/TEST-012-post-restart-collection.json \
   CORRELATION_ID="test012-$(date -u +%Y%m%dT%H%M%SZ)-$$" \
   bash tests/integration/cpamp_collection.sh
 

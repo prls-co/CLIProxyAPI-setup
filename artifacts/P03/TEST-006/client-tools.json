@@ -1,12 +1,12 @@
 {
   "type": "response.completed",
   "response": {
-    "id": "resp_01041b6c36b62935016a83558656cc8198b621546d2de0a08e",
+    "id": "resp_00bbf25de2c84df9016a835f80d8f8819bb23bc4ecdbdb3e60",
     "object": "response",
-    "created_at": 1786992006,
+    "created_at": 1786994560,
     "status": "completed",
     "background": false,
-    "completed_at": 1786992006,
+    "completed_at": 1786994561,
     "error": null,
     "frequency_penalty": 0.0,
     "incomplete_details": null,
@@ -17,7 +17,7 @@
     "moderation": null,
     "output": [
       {
-        "id": "msg_01041b6c36b62935016a835586d118819893ef61acec6467d0",
+        "id": "msg_00bbf25de2c84df9016a835f815b60819b83cd7eb26195507b",
         "type": "message",
         "status": "completed",
         "content": [
@@ -35,7 +35,7 @@
     "parallel_tool_calls": true,
     "presence_penalty": 0.0,
     "previous_response_id": null,
-    "prompt_cache_key": "4c3d101a-f6da-4b78-98d8-088c13e5ad19",
+    "prompt_cache_key": "251eac0a-b0ae-49cf-ad4a-b3d05789d544",
     "prompt_cache_retention": "24h",
     "reasoning": {
       "context": "current_turn",

@@ -2,17 +2,17 @@
 
 ## Secrets and API keys
 
-- Keep local secrets, API keys, and access tokens in the ignored `.env.local`
-  file (preferred for machine-specific values) or `.env`.
-- Never commit, print, log, paste, or otherwise expose values from either
-  environment file. Read only the specific variables required for an approved
-  task, and keep their values out of command output and generated artifacts.
+- Keep local secrets, API keys, access tokens, and configuration variables in
+  the ignored mode-`0600` `.env` file. `.env` is the single source of truth;
+  `.env.local` is unsupported.
+- Never commit, print, log, paste, or otherwise expose values from `.env`.
+  Read only the specific variables required for an approved task, and keep
+  their values out of command output and generated artifacts.
 - Do not introduce or use GCP Secret Manager or other GCP-hosted secrets for
-  this repository. Use `.env.local` or `.env` instead to avoid that cost.
-- Treat `.env.local` as the canonical source for manually managed secrets.
-  Ignored mode-`0600` files under `state/` may be generated only as runtime
-  mirrors required by CPA, Compose, or backup/restore; never edit them as the
-  source of truth.
+  this repository. Use `.env` instead to avoid that cost.
+- Do not create credential mirrors under `state/secrets/`. Generated OAuth
+  state, databases, and rendered configuration under `state/` are runtime data,
+  not configuration sources.
 
 ## LLM routing
 

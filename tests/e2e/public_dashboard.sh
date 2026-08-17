@@ -6,14 +6,13 @@ umask 077
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
+# shellcheck source=scripts/lib/common.sh
+source scripts/lib/common.sh
+load_env
 : "${CPAMP_PUBLIC_URL:=https://cpa.prls.co}"
-: "${CPAMP_ADMIN_KEY_FILE:=state/secrets/cpamp-admin-key}"
+: "${CPAMP_ADMIN_KEY:?CPAMP_ADMIN_KEY is required in .env}"
 
-[[ -s "$CPAMP_ADMIN_KEY_FILE" ]] || {
-  printf 'CPAMP admin key file is unavailable: %s\n' "$CPAMP_ADMIN_KEY_FILE" >&2
-  exit 1
-}
-admin_key="$(<"$CPAMP_ADMIN_KEY_FILE")"
+admin_key="$CPAMP_ADMIN_KEY"
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT

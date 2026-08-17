@@ -7,19 +7,21 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 # shellcheck source=scripts/lib/sse.sh
 source scripts/lib/sse.sh
+# shellcheck source=scripts/lib/common.sh
+source scripts/lib/common.sh
+load_env
 
-: "${CPA_BASE_URL:=http://127.0.0.1:8317}"
-: "${CPA_API_KEY_FILE:=state/secrets/cpa-api-key}"
+: "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
 : "${MODEL:=gpt-5.4-mini}"
 : "${CPA_VERSION:=v7.2.135}"
 : "${CASE_FILTER:=}"
 : "${CORRELATION_ID:=test006-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
-[[ -s "$CPA_API_KEY_FILE" ]] || { printf 'CPA API key file is unavailable\n' >&2; exit 1; }
+: "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 
 mkdir -p artifacts/P03/TEST-006
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
-api_key="$(<"$CPA_API_KEY_FILE")"
+api_key="$CPA_API_KEY"
 cpa_image="$(docker compose config --format json | jq -r '.services["cli-proxy-api"].image')"
 if [[ -z "$CASE_FILTER" ]]; then
   metadata_path=artifacts/P03/TEST-006/metadata.ndjson
@@ -47,7 +49,7 @@ run_case() {
     --data-binary @"$tmp/$name.request.json" \
     -o "$tmp/$name.raw" \
     -w $'%{http_code}\t%{time_starttransfer}\t%{time_total}' \
-    "$CPA_BASE_URL/v1/responses")"
+    "$CPA_LOCAL_BASE_URL/v1/responses")"
   IFS=$'\t' read -r http_status first_byte_seconds total_seconds <<<"$metrics"
   [[ "$http_status" == 200 ]] || { printf 'unexpected HTTP status for %s: %s\n' "$name" "$http_status" >&2; return 1; }
 

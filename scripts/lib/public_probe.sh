@@ -9,11 +9,10 @@ source "$probe_lib_dir/sse.sh"
 # Sets OPENAI_PROBE_HEALTH_PATH and OPENAI_PROBE_COMPLETED on success. All raw
 # material stays in the caller-provided temporary directory.
 openai_basic_probe() {
-  local base="$1" key_file="$2" model="$3" work_dir="$4"
-  local key origin path output_text
-  [[ -s "$key_file" ]] || return 1
+  local base="$1" key="$2" model="$3" work_dir="$4"
+  local origin path output_text
+  [[ -n "$key" ]] || return 1
   mkdir -p "$work_dir"
-  key="$(<"$key_file")"
   origin="${base%/v1}"
   OPENAI_PROBE_HEALTH_PATH=""
 

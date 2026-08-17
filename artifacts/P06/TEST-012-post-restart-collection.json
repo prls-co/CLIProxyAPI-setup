@@ -1,15 +1,15 @@
 {
   "test": "TEST-007",
   "status": "pass",
-  "correlation_id": "test012-20260817T183948Z-1042510",
-  "cpamp_request_id": "87434a2e",
+  "correlation_id": "test012-20260817T192222Z-1416675",
+  "cpamp_request_id": "d38dfbe3",
   "correlation_method": "serial event-count delta and timestamp window",
   "model": "gpt-5.4-mini",
   "failed": false,
-  "baseline_events": 26945,
-  "final_events": 26946,
-  "last_consumed_at": 1786991989364,
-  "last_inserted_at": 1786991989432,
-  "latency_ms": 1112,
+  "baseline_events": 27010,
+  "final_events": 27011,
+  "last_consumed_at": 1786994543565,
+  "last_inserted_at": 1786994543639,
+  "latency_ms": 910,
   "total_tokens": 32
 }

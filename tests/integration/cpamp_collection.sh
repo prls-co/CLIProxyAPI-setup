@@ -5,23 +5,24 @@ export LC_ALL=C
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
+# shellcheck source=scripts/lib/common.sh
+source scripts/lib/common.sh
+load_env
 
 : "${CPAMP_BASE_URL:=http://127.0.0.1:18317}"
-: "${CPAMP_ADMIN_KEY_FILE:=state/secrets/cpamp-admin-key}"
-: "${CPA_BASE_URL:=http://127.0.0.1:8317}"
-: "${CPA_API_KEY_FILE:=state/secrets/cpa-api-key}"
+: "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
 : "${MODEL:=gpt-5.4-mini}"
 : "${ARTIFACT_PATH:=artifacts/P04/TEST-007-green.json}"
 : "${CORRELATION_ID:=test007-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 
-[[ -s "$CPAMP_ADMIN_KEY_FILE" ]] || { printf 'CPAMP admin key file is unavailable\n' >&2; exit 1; }
-[[ -s "$CPA_API_KEY_FILE" ]] || { printf 'CPA API key file is unavailable\n' >&2; exit 1; }
+: "${CPAMP_ADMIN_KEY:?CPAMP_ADMIN_KEY is required in .env}"
+: "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 
 mkdir -p "$(dirname "$ARTIFACT_PATH")"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
-admin_key="$(<"$CPAMP_ADMIN_KEY_FILE")"
-api_key="$(<"$CPA_API_KEY_FILE")"
+admin_key="$CPAMP_ADMIN_KEY"
+api_key="$CPA_API_KEY"
 
 cpamp_get() {
   curl -fsS --max-time 10 -H "Authorization: Bearer $admin_key" "$CPAMP_BASE_URL$1"
@@ -55,7 +56,7 @@ curl -fsS -N --max-time 20 \
   -H 'Content-Type: application/json' \
   -H "X-Client-Request-Id: $CORRELATION_ID" \
   --data-binary @"$tmp/request.json" \
-  "$CPA_BASE_URL/v1/responses" >"$tmp/response.sse"
+  "$CPA_LOCAL_BASE_URL/v1/responses" >"$tmp/response.sse"
 grep -q 'response.completed' "$tmp/response.sse"
 
 deadline=$((SECONDS + 30))

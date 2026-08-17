@@ -16,10 +16,12 @@ sanitize_config() {
 from pathlib import Path
 import sys
 root = Path.cwd()
+sys.path.insert(0, str(root / "scripts"))
+from lib.env import load_env
+values = load_env(root / ".env")
 text = (root / "state/cpa/config.yaml").read_text()
-for name in ("cpa-management-key", "cpa-api-key"):
-    value = (root / "state/secrets" / name).read_text()
-    text = text.replace(value, f"REDACTED_{name.upper().replace('-', '_')}")
+for name in ("CPA_MANAGEMENT_KEY", "CPA_API_KEY"):
+    text = text.replace(values[name], f"REDACTED_{name}")
 Path(sys.argv[1]).write_text(text)
 PY
 }
@@ -27,7 +29,7 @@ PY
 for run in 1 2; do
   python3 scripts/render-cpa-config.py
   sanitize_config "$tmp/cpa-$run.yaml"
-  COMPOSE_PROJECT_NAME=cliproxyapi-repro docker compose --profile public config --format json \
+  docker compose --project-name cliproxyapi-repro --profile public config --format json \
     | jq -S . >"$tmp/compose-$run.json"
 done
 

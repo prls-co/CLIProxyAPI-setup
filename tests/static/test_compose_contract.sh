@@ -6,13 +6,13 @@ export LC_ALL=C
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 
-for file in compose.yaml .env.example .env.local.example config/cpa/config.yaml.template; do
+for file in compose.yaml .env.example config/cpa/config.yaml.template; do
   [[ -f "$file" ]] || { printf 'missing %s\n' "$file" >&2; exit 1; }
 done
 
 rendered="$(mktemp)"
 trap 'rm -f "$rendered"' EXIT
-COMPOSE_PROJECT_NAME=cliproxyapi-test docker compose --profile public config --format json >"$rendered"
+docker compose --project-name cliproxyapi-test --profile public config --format json >"$rendered"
 
 cpa_digest='eceasy/cli-proxy-api@sha256:53162ac4ebf4f399b729a80830ad13e992add2430e1387a54e09a192987f6df3'
 cpamp_digest='seakee/cpa-manager-plus@sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351'
@@ -48,6 +48,10 @@ jq -e '.services["cpa-manager-plus"].volumes[] | select(.target == "/data")' "$r
 jq -e '.services["cpa-manager-plus"].environment.CPA_UPSTREAM_URL == "http://cli-proxy-api:4000"' "$rendered" >/dev/null
 jq -e '.services["cpa-manager-plus"].environment.CPA_MANAGEMENT_KEY_FILE == "/run/secrets/cpa_management_key"' "$rendered" >/dev/null
 jq -e '.services["cpa-manager-plus"].secrets[] | select(.source == "cpa_management_key" and .target == "/run/secrets/cpa_management_key")' "$rendered" >/dev/null
+jq -e '.secrets.cpamp_admin_key.environment == "CPAMP_ADMIN_KEY"' "$rendered" >/dev/null
+jq -e '.secrets.cpa_management_key.environment == "CPA_MANAGEMENT_KEY"' "$rendered" >/dev/null
+jq -e '.secrets.tunnel_token.environment == "CPA_TUNNEL_TOKEN"' "$rendered" >/dev/null
+jq -e '([.. | strings] | any(test("state/secrets"))) | not' "$rendered" >/dev/null
 jq -e '.services["cpa-manager-plus"].depends_on["cli-proxy-api"].condition == "service_healthy"' "$rendered" >/dev/null
 jq -e '.services["cli-proxy-api"].healthcheck.test[1] | contains("bash -c")' "$rendered" >/dev/null
 

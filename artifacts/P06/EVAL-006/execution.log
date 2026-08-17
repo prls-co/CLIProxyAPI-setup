@@ -5,36 +5,32 @@
  Container cliproxyapi-setup-cli-proxy-api-1  Healthy
  Container cliproxyapi-setup-cpa-manager-plus-1  Starting
  Container cliproxyapi-setup-cpa-manager-plus-1  Started
-curl: (56) Recv failure: Connection reset by peer
  Container cliproxyapi-setup-cli-proxy-api-1  Recreate
  Container cliproxyapi-setup-cli-proxy-api-1  Recreated
  Container cliproxyapi-setup-cli-proxy-api-1  Starting
  Container cliproxyapi-setup-cli-proxy-api-1  Started
-curl: (56) Recv failure: Connection reset by peer
  Container cliproxyapi-setup-cpa-manager-plus-1  Recreate
  Container cliproxyapi-setup-cpa-manager-plus-1  Recreated
  Container cliproxyapi-setup-cpa-manager-plus-1  Starting
  Container cliproxyapi-setup-cpa-manager-plus-1  Started
-curl: (56) Recv failure: Connection reset by peer
-rendered CPA API and native-admin-key dashboard edge configuration
+rendered public edge configuration from .env
  Container cliproxyapi-setup-cpamp-public-1  Recreate
  Container cliproxyapi-setup-cpamp-public-1  Recreated
  Container cliproxyapi-setup-cpamp-public-1  Starting
  Container cliproxyapi-setup-cpamp-public-1  Started
-curl: (56) Recv failure: Connection reset by peer
 private services restarted
 CPAMP request collection: ok
 service restart persistence: ok
  Container cliproxyapi-setup-cli-proxy-api-1  Running
 CPA auth and model readiness: ok
-case basic: ok http=200 first_byte=0.609189s total=0.886769s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T183954Z-1045066-basic
-case strict-schema: ok http=200 first_byte=0.529447s total=1.279201s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T183954Z-1045066-strict-schema
-case strict-schema-nonstreaming: ok http=200 first_byte=1.223219s total=1.223270s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T183954Z-1045066-strict-schema-nonstreaming
-case translation-filtering: ok http=200 first_byte=0.617300s total=1.289742s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T183954Z-1045066-translation-filtering
-case web-search: ok http=200 first_byte=0.503016s total=3.205836s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T183954Z-1045066-web-search
-case web-search-schema: ok http=200 first_byte=0.780000s total=3.612138s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T183954Z-1045066-web-search-schema
-case client-tools: ok http=200 first_byte=0.711678s total=1.143263s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T183954Z-1045066-client-tools
+case basic: ok http=200 first_byte=0.558886s total=0.967409s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T192228Z-1419158-basic
+case strict-schema: ok http=200 first_byte=0.593338s total=1.118570s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T192228Z-1419158-strict-schema
+case strict-schema-nonstreaming: ok http=200 first_byte=1.141681s total=1.141733s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T192228Z-1419158-strict-schema-nonstreaming
+case translation-filtering: ok http=200 first_byte=0.498023s total=1.127159s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T192228Z-1419158-translation-filtering
+case web-search: ok http=200 first_byte=0.933537s total=3.769698s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T192228Z-1419158-web-search
+case web-search-schema: ok http=200 first_byte=0.516726s total=3.597752s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T192228Z-1419158-web-search-schema
+case client-tools: ok http=200 first_byte=0.568326s total=0.982039s model=gpt-5.4-mini-2026-03-17 cpa=v7.2.135 call_id=test006-20260817T192228Z-1419158-client-tools
 Responses contract: ok
-public case strict-schema: ok http=200 first_byte=1.099876s total=1.822506s call_id=test010-20260817T184007Z-1047019-strict-schema
-public case strict-schema-nonstreaming: ok http=200 first_byte=1.371808s total=1.371917s call_id=test010-20260817T184007Z-1047019-strict-schema-nonstreaming
+public case strict-schema: ok http=200 first_byte=0.651777s total=1.265422s call_id=test010-20260817T192241Z-1421170-strict-schema
+public case strict-schema-nonstreaming: ok http=200 first_byte=1.309272s total=1.309382s call_id=test010-20260817T192241Z-1421170-strict-schema-nonstreaming
 public CPA contract: ok

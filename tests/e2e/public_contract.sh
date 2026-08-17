@@ -7,23 +7,24 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 # shellcheck source=scripts/lib/public_probe.sh
 source scripts/lib/public_probe.sh
+# shellcheck source=scripts/lib/common.sh
+source scripts/lib/common.sh
+load_env
 
 : "${PUBLIC_BASE_URL:=https://cpa.prls.co/v1}"
-: "${PUBLIC_API_KEY_FILE:=state/secrets/cpa-api-key}"
 : "${MODEL:=gpt-5.4-mini}"
 : "${CPA_VERSION:=v7.2.135}"
 : "${ARTIFACT_DIR:=artifacts/P05/TEST-010/post-cutover}"
 : "${CORRELATION_ID:=test010-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 
-[[ -s "$PUBLIC_API_KEY_FILE" ]] || { printf 'public API key file is unavailable\n' >&2; exit 1; }
+: "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 expected_origin_hostname="$(awk '$1 == "header_down" && $2 == "X-CPA-Origin-Hostname" {gsub(/"/, "", $3); print $3; exit}' state/cpamp-public/Caddyfile)"
 [[ -n "$expected_origin_hostname" ]] || { printf 'public origin hostname is unavailable from generated edge config\n' >&2; exit 1; }
 mkdir -p "$ARTIFACT_DIR"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
-key="$(<"$PUBLIC_API_KEY_FILE")"
 cpa_image="$(docker compose config --format json | jq -r '.services["cli-proxy-api"].image')"
-openai_basic_probe "$PUBLIC_BASE_URL" "$PUBLIC_API_KEY_FILE" "$MODEL" "$tmp"
+openai_basic_probe "$PUBLIC_BASE_URL" "$CPA_API_KEY" "$MODEL" "$tmp"
 health_path="$OPENAI_PROBE_HEALTH_PATH"
 jq -e --arg model "$MODEL" '.data | any(.id == $model)' "$tmp/models.json" >/dev/null
 jq --arg model "$MODEL" '{object:(.object // "list"),model_present:(.data | any(.id == $model)),model_count:(.data | length)}' \
@@ -34,7 +35,7 @@ run_response() {
   jq --arg model "$MODEL" '.model=$model' "$fixture" >"$tmp/$name.request.json"
   local metrics http_status first_byte_seconds total_seconds origin_hostname
   metrics="$(curl -sS -N --max-time 20 \
-    -H "Authorization: Bearer $key" \
+    -H "Authorization: Bearer $CPA_API_KEY" \
     -H 'Content-Type: application/json' \
     -H "X-Client-Request-Id: $CORRELATION_ID-$name" \
     --data-binary @"$tmp/$name.request.json" \

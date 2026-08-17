@@ -2,25 +2,27 @@
 import json
 import os
 from pathlib import Path
+import sys
 
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "config" / "cpa" / "config.yaml.template"
 OUTPUT = ROOT / "state" / "cpa" / "config.yaml"
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from lib.env import load_env, require_env_value  # noqa: E402
 
 
-def read_secret(name: str) -> str:
-    value = (ROOT / "state" / "secrets" / name).read_text(encoding="utf-8")
-    if not value:
-        raise SystemExit(f"empty secret file: state/secrets/{name}")
-    return value
+def read_secret(values: dict[str, str], name: str) -> str:
+    return require_env_value(values, name)
 
 
 def main() -> None:
+    values = load_env(ROOT / ".env")
     text = TEMPLATE.read_text(encoding="utf-8")
     replacements = {
-        "__CPA_MANAGEMENT_KEY_JSON__": json.dumps(read_secret("cpa-management-key")),
-        "__CPA_API_KEY_JSON__": json.dumps(read_secret("cpa-api-key")),
+        "__CPA_MANAGEMENT_KEY_JSON__": json.dumps(read_secret(values, "CPA_MANAGEMENT_KEY")),
+        "__CPA_API_KEY_JSON__": json.dumps(read_secret(values, "CPA_API_KEY")),
     }
     for marker, value in replacements.items():
         if marker not in text:

@@ -7,7 +7,16 @@ umask 077
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 
-required_scripts=(scripts/bootstrap.sh scripts/restore.sh scripts/init-state.sh scripts/configure-cloudflare.sh scripts/switch-current-machine.sh scripts/render-cpa-config.py scripts/render-public-config.py)
+required_scripts=(
+  scripts/bootstrap.sh
+  scripts/restore.sh
+  scripts/init-state.sh
+  scripts/configure-cloudflare.sh
+  scripts/switch-current-machine.sh
+  scripts/render-cpa-config.py
+  scripts/render-public-config.py
+  scripts/sync-env.py
+)
 for file in "${required_scripts[@]}"; do
   [[ -x "$file" ]] || { printf 'missing executable: %s\n' "$file" >&2; exit 1; }
 done
@@ -16,16 +25,14 @@ bash scripts/init-state.sh
 python3 scripts/render-cpa-config.py
 python3 scripts/render-public-config.py
 
-secret_files=(
-  state/secrets/cpa-api-key
-  state/secrets/cpa-management-key
-  state/secrets/cpamp-admin-key
-  state/secrets/tunnel-token
-)
-for file in "${secret_files[@]}" state/cpa/config.yaml; do
+[[ -f .env ]] || { printf 'missing canonical .env\n' >&2; exit 1; }
+[[ "$(stat -c '%a' .env)" == 600 ]] || { printf '.env must be mode 0600\n' >&2; exit 1; }
+[[ ! -e .env.local ]] || { printf '.env.local must not exist\n' >&2; exit 1; }
+[[ ! -e state/secrets ]] || { printf 'state/secrets mirrors must not exist\n' >&2; exit 1; }
+
+for file in state/cpa/config.yaml; do
   [[ -s "$file" ]] || { printf 'missing generated state file: %s\n' "$file" >&2; exit 1; }
-  mode="$(stat -c '%a' "$file")"
-  [[ "$mode" == 600 ]] || { printf 'incorrect mode %s for %s\n' "$mode" "$file" >&2; exit 1; }
+  [[ "$(stat -c '%a' "$file")" == 600 ]] || { printf 'incorrect mode for %s\n' "$file" >&2; exit 1; }
 done
 [[ -s state/cpamp-public/Caddyfile ]] || { printf 'missing generated Caddyfile\n' >&2; exit 1; }
 [[ "$(stat -c '%a' state/cpamp-public/Caddyfile)" == 644 ]] || {
@@ -33,47 +40,50 @@ done
   exit 1
 }
 
-for dir in state state/secrets state/cpa state/cpa/auths state/cpa/logs state/cpamp state/cpamp/data state/cpamp-public; do
+for dir in state state/cpa state/cpa/auths state/cpa/logs state/cpamp state/cpamp/data state/cpamp-public; do
   mode="$(stat -c '%a' "$dir")"
   [[ "$mode" == 700 ]] || { printf 'incorrect mode %s for %s\n' "$mode" "$dir" >&2; exit 1; }
 done
 
-git check-ignore -q state/secrets/cpa-api-key
+git check-ignore -q .env
 git check-ignore -q state/cpa/config.yaml
 git check-ignore -q state/cpamp/data/usage.sqlite
 git check-ignore -q state/cpamp-public/Caddyfile
-git check-ignore -q .env
-git check-ignore -q .env.local
-[[ "$(stat -c '%a' .env)" == 600 ]] || { printf '.env must be mode 0600\n' >&2; exit 1; }
-[[ "$(stat -c '%a' .env.local)" == 600 ]] || { printf '.env.local must be mode 0600\n' >&2; exit 1; }
+
 python3 - <<'PY'
 from pathlib import Path
-expected = {
-    "CPA_API_KEY": Path("state/secrets/cpa-api-key").read_text(encoding="utf-8").strip(),
-    "CPA_MANAGEMENT_KEY": Path("state/secrets/cpa-management-key").read_text(encoding="utf-8").strip(),
-    "CPAMP_ADMIN_KEY": Path("state/secrets/cpamp-admin-key").read_text(encoding="utf-8").strip(),
-}
-values = {}
-for raw in Path(".env.local").read_text(encoding="utf-8").splitlines():
-    line = raw.strip()
-    if line and not line.startswith("#") and "=" in line:
-        key, value = line.split("=", 1)
-        key = key.strip()
-        if key in expected:
-            if key in values:
-                raise SystemExit(f".env.local contains duplicate {key}")
-            values[key] = value.strip().strip("\"'")
-if values != expected:
-    raise SystemExit(".env.local must contain the canonical CPA secret values")
+import sys
 
-for raw in Path(".env").read_text(encoding="utf-8").splitlines():
-    line = raw.strip()
-    if line and not line.startswith("#") and "=" in line:
-        key = line.split("=", 1)[0].strip()
-        if key in expected or key in {"CLOUDFLARE_API_TOKEN", "CPA_TUNNEL_TOKEN"}:
-            raise SystemExit(f"secret must not remain in .env: {key}")
+sys.path.insert(0, str(Path.cwd() / "scripts"))
+from lib.env import load_env, require_env_value
+
+values = load_env(Path(".env"))
+required = (
+    "CPA_API_KEY",
+    "CPA_MANAGEMENT_KEY",
+    "CPAMP_ADMIN_KEY",
+    "CLOUDFLARE_API_TOKEN",
+    "CPA_TUNNEL_TOKEN",
+)
+for key in required:
+    require_env_value(values, key)
+if len(values["CPA_MANAGEMENT_KEY"]) > 72:
+    raise SystemExit("CPA management key exceeds bcrypt limit")
+
+for candidate in sorted(Path(".").rglob("*")):
+    if not candidate.is_file():
+        continue
+    if any(part in {".git", "state", "backups", "artifacts"} for part in candidate.parts):
+        continue
+    if candidate == Path(".env"):
+        continue
+    text = candidate.read_text(encoding="utf-8", errors="ignore")
+    for key in required:
+        if values[key] and values[key] in text:
+            raise SystemExit(f"{key} value found outside .env: {candidate}")
 PY
-if grep -Eq 'basic_auth|header_up[[:space:]]+Authorization' state/cpamp-public/Caddyfile; then
+
+if grep -Eqi 'basic_auth|header_up[[:space:]]+Authorization' state/cpamp-public/Caddyfile; then
   printf 'redundant dashboard authentication found in edge configuration\n' >&2
   exit 1
 fi
@@ -87,26 +97,5 @@ if grep -Eqi 'openai-api-key|OPENAI_API_KEY' state/cpa/config.yaml; then
   printf 'paid OpenAI provider configuration is forbidden\n' >&2
   exit 1
 fi
-
-for secret_file in "${secret_files[@]}"; do
-  secret="$(<"$secret_file")"
-  [[ -n "$secret" ]] || { printf 'empty secret file: %s\n' "$secret_file" >&2; exit 1; }
-  if [[ "$secret_file" == state/secrets/cpa-management-key && ${#secret} -gt 72 ]]; then
-    printf 'CPA management key exceeds bcrypt limit\n' >&2
-    exit 1
-  fi
-  while IFS= read -r candidate; do
-    case "$candidate" in
-      ./.git/*|./state/*|./backups/*|./artifacts/*) continue ;;
-    esac
-    if [[ "$candidate" == ./.env.local ]]; then
-      continue
-    fi
-    if grep -Fq -- "$secret" "$candidate" 2>/dev/null; then
-      printf 'secret value found outside ignored state: %s\n' "$candidate" >&2
-      exit 1
-    fi
-  done < <(find . -type f -not -path './.git/*' | sort)
-done
 
 printf 'secret hygiene: ok\n'

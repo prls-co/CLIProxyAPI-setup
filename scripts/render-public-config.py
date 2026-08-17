@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the public edge and mirror CPAMP's native admin key into .env.local."""
+"""Render the public edge from the canonical .env configuration."""
 
 from __future__ import annotations
 
@@ -12,12 +12,15 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parent.parent
-ENV_PATH = ROOT / ".env.local"
-STATE = ROOT / "state"
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from lib.env import load_env  # noqa: E402
 
 
-def resolve_origin_hostname() -> str:
-    value = os.environ.get("CPA_ORIGIN_HOSTNAME", "").strip() or socket.gethostname().strip()
+def resolve_origin_hostname(values: dict[str, str] | None = None) -> str:
+    if values is None:
+        values = load_env(ROOT / ".env") if (ROOT / ".env").is_file() else {}
+    value = values.get("CPA_ORIGIN_HOSTNAME", "").strip() or socket.gethostname().strip()
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,252}", value):
         raise ValueError("CPA origin hostname is empty or has an unexpected format")
     return value
@@ -58,54 +61,18 @@ def atomic_write(path: Path, content: str, mode: int = 0o600) -> None:
             pass
 
 
-def sync_dotenv_key(path: Path, key: str, value: str) -> None:
-    lines = path.read_text(encoding="utf-8").splitlines()
-    replacement = f"{key}={value}"
-    output: list[str] = []
-    replaced = False
-    for line in lines:
-        candidate = line.strip()
-        if candidate and not candidate.startswith("#") and "=" in candidate:
-            current = candidate.split("=", 1)[0].strip()
-            if current == key:
-                if not replaced:
-                    output.append(replacement)
-                    replaced = True
-                continue
-        output.append(line)
-    if not replaced:
-        if output and output[-1] != "":
-            output.append("")
-        output.append(replacement)
-
-    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            handle.write("\n".join(output) + "\n")
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.chmod(temporary, 0o600)
-        os.replace(temporary, path)
-    finally:
-        try:
-            os.unlink(temporary)
-        except FileNotFoundError:
-            pass
-
-
 def main() -> int:
-    if not ENV_PATH.is_file():
-        raise ValueError(f"missing ignored environment file: {ENV_PATH}")
-    admin_key = (STATE / "secrets" / "cpamp-admin-key").read_text(encoding="utf-8").strip()
-    if not re.fullmatch(r"[A-Za-z0-9._-]{16,256}", admin_key):
-        raise ValueError("CPAMP admin key is empty or has an unexpected format")
-    sync_dotenv_key(ENV_PATH, "CPAMP_ADMIN_KEY", admin_key)
+    values = load_env(ROOT / ".env")
 
     # The Caddy container runs as uid 1000, while the checkout owner varies
     # between machines. This file contains only routing rules, so it must be
     # world-readable on the bind mount for the fixed container uid to read it.
-    atomic_write(STATE / "cpamp-public" / "Caddyfile", render_caddyfile(), mode=0o644)
-    print("rendered CPA API and native-admin-key dashboard edge configuration")
+    atomic_write(
+        ROOT / "state" / "cpamp-public" / "Caddyfile",
+        render_caddyfile(resolve_origin_hostname(values)),
+        mode=0o644,
+    )
+    print("rendered public edge configuration from .env")
     return 0
 
 
