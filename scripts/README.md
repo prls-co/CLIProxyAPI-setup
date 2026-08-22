@@ -23,11 +23,18 @@ absent, switches the canonical machine, and installs the user service. Use
 `--skip-login` after restoring a state archive and `--skip-systemd` when another
 supervisor owns the host.
 
+`cpa-claude-login.sh` adds or refreshes Claude subscription OAuth on an SSH
+host. It publishes the OAuth callback only on host loopback port `54545`, uses
+`--no-browser`, preserves the shared CPA auth directory, and normalizes saved
+auth files to mode `0600` with operator ownership. `smoke-claude.fish` is the
+canonical public Claude verification; invoke it as `fish
+scripts/smoke-claude.fish` even from a Bash-backed command runner.
+
 `restore.sh` validates and restores an archive produced by `backup.sh`. It
 checks archive traversal safety, manifest hashes and modes, required runtime
-state, and Codex OAuth files in an isolated pinned helper container. It keeps a
-recoverable copy of the existing `state/` directory and leaves services stopped
-so `bootstrap.sh --skip-login` can complete the cutover.
+state, and Codex and Claude OAuth files in an isolated pinned helper container.
+It keeps a recoverable copy of the existing `state/` directory and leaves
+services stopped so `bootstrap.sh --skip-login` can complete the cutover.
 
 `switch-current-machine.sh` is the canonical repeated-machine cutover. It
 brings up and health-checks this machine's CPA origin and public edge,

@@ -3,12 +3,12 @@
 Pinned, test-gated deployment of CLIProxyAPI (CPA) and CPA Manager Plus for
 the canonical `https://cpa.prls.co/v1` OpenAI-compatible gateway.
 
-The runtime contract is bearer authentication and persisted Codex OAuth
-subscription access. Automated local and public contract tests use
+The runtime contract is bearer authentication with persisted Codex and Claude
+OAuth subscription access. Automated local and public Codex contract tests use
 `gpt-5.4-mini` as their acceptance baseline. CPA does not configure a
 server-side default model; each request selects its model. The operator smoke
-check below uses `gpt-5.6-luna` with low reasoning. No pay-per-token OpenAI
-provider is configured.
+checks use `gpt-5.6-luna` with low reasoning and `claude-sonnet-5`. No
+pay-per-token OpenAI or Anthropic provider is configured.
 CPA Manager Plus is available at `https://cpa.prls.co/management.html` using
 its native admin-key login. All raw service ports remain loopback-only.
 
@@ -26,6 +26,8 @@ deployment does not require GCP Secret Manager.
 
 ```bash
 bash scripts/bootstrap.sh
+bash scripts/cpa-claude-login.sh
+fish scripts/smoke-claude.fish
 bash scripts/switch-current-machine.sh
 bash scripts/restart-private.sh
 bash scripts/backup.sh
@@ -52,8 +54,10 @@ bash scripts/bootstrap.sh
 The bootstrap command creates the ignored mode-`0600` `.env`, prompts for
 the Cloudflare API token without echoing it, generates local CPA keys, starts
 Codex device login when OAuth state is absent, switches `cpa.prls.co` to this
-machine, and installs the user service. Use `--skip-systemd` when the host is
-managed by another supervisor. The bootstrap command never prints API keys.
+machine, and installs the user service. Add Claude subscription access with
+`bash scripts/cpa-claude-login.sh` after bootstrap; its SSH-safe flow keeps the
+OAuth callback on loopback. Use `--skip-systemd` when the host is managed by
+another supervisor. Neither command prints API keys.
 
 The runtime services—CPA, CPA Manager Plus, the Caddy edge, and `cloudflared`—
 run in Docker Compose. Bootstrap, Cloudflare reconciliation, systemd
@@ -63,7 +67,8 @@ to the host Docker daemon, user service manager, and protected local files.
 ## Move the gateway to another machine
 
 For a real migration, clone-only is not enough: the backup preserves the CPA
-keys, Manager Plus database, and Codex subscription state. On the old machine:
+keys, Manager Plus database, and Codex and Claude subscription state. On the
+old machine:
 
 ```bash
 archive="$(bash scripts/backup.sh)"
@@ -99,23 +104,38 @@ make verify
 
 `make verify` exercises the local deployment. `make test-public` and `make
 eval` include live provider calls and should be run when release evidence is
-required.
+required. Fish is required by the static login contract and the public Claude
+subscription smoke.
 
 ## Public subscription smoke check (Fish)
+
+Run Fish explicitly when invoking these examples from a Bash-backed command
+runner. Pasting Fish syntax such as `set -l NAME (...)` directly into Bash
+fails before `curl` runs.
+
+Test the Claude subscription through the public Anthropic Messages endpoint:
+
+```console
+fish scripts/smoke-claude.fish
+```
+
+Expected output is `claude-ok`. The script parses the Bash-style `.env` with
+Bash, retains `CPA_API_KEY` only inside the Fish process, and passes the header
+to `curl` through standard input rather than a command argument.
 
 Load the local CPA key from the canonical `.env` into the current Fish session,
 then run the short public Chat Completions request:
 
 ```fish
-set -l CPA_API_KEY (grep -h '^CPA_API_KEY=' .env | tail -n1 | string replace -r '^[^=]*=' '')
+set -l CPA_API_KEY (bash -c 'source "$1"; printf "%s" "${CPA_API_KEY:-}"' bash .env)
 test -n "$CPA_API_KEY"; or begin
     echo 'CPA_API_KEY is missing from .env' >&2
     exit 1
 end
 
-curl -i https://cpa.prls.co/v1/chat/completions \
+printf 'header = "Authorization: Bearer %s"\n' "$CPA_API_KEY" | \
+curl -i --config - https://cpa.prls.co/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $CPA_API_KEY" \
   -d '{
     "model": "gpt-5.6-luna",
     "messages": [
@@ -130,8 +150,9 @@ curl -i https://cpa.prls.co/v1/chat/completions \
   }'
 ```
 
-The gateway bearer key authenticates CPA; its persisted Codex OAuth state uses
-the ChatGPT subscription. The model name is `gpt-5.6-luna` without a provider
-prefix. The response headers include `X-CPA-Origin-Hostname`, which identifies
-the machine that served the request. Set the optional `CPA_ORIGIN_HOSTNAME` in
-`.env` to override the machine hostname used by the edge.
+The gateway bearer key authenticates CPA; its persisted OAuth state uses the
+matching ChatGPT or Claude subscription according to the requested model. Model
+names have no provider prefix. The response headers include
+`X-CPA-Origin-Hostname`, which identifies the machine that served the request.
+Set the optional `CPA_ORIGIN_HOSTNAME` in `.env` to override the machine
+hostname used by the edge.

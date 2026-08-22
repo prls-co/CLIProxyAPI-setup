@@ -63,12 +63,12 @@ bash scripts/bootstrap.sh --skip-login
 ```
 
 `restore.sh` validates archive paths, hashes, modes, required CPA/Manager Plus
-state, and Codex OAuth files before changing the live checkout. It moves the
-existing `state/` directory to a recoverable `.pre-restore-state-*` copy and
-leaves services stopped. Bootstrap then renders the edge, switches the
+state, and Codex and Claude OAuth files before changing the live checkout. It
+moves the existing `state/` directory to a recoverable `.pre-restore-state-*`
+copy and leaves services stopped. Bootstrap then renders the edge, switches the
 canonical tunnel, and installs the service. Stop the old machine's
-`cloudflared`/Compose stack after the new machine reports success because an
-old live connector can reconnect after Cloudflare removes it.
+`cloudflared`/Compose stack after the new machine reports success because an old
+live connector can reconnect after Cloudflare removes it.
 
 ## Switch the active machine
 
@@ -113,7 +113,7 @@ Healthy collector status has `collector.collector == "running"`, an empty
 `collector.lastError`, and advancing consumption and insertion timestamps after
 a request.
 
-## Device login
+## Subscription login
 
 If Codex OAuth is revoked or expires, perform device login interactively and
 then re-run readiness:
@@ -122,6 +122,36 @@ then re-run readiness:
 bash scripts/cpa-codex-login.sh
 bash tests/integration/cpa_auth_models.sh
 ```
+
+To add or refresh Claude subscription access on this SSH host, start the
+loopback-only login command in the server session:
+
+```bash
+bash scripts/cpa-claude-login.sh
+```
+
+Before opening the authorization URL printed by that command, keep this port
+forward running in a second terminal on the local machine:
+
+```bash
+ssh -N -L 54545:127.0.0.1:54545 kirill@shaman.prls.co
+```
+
+Open the printed URL in the local browser and leave the tunnel open through the
+success page. If the browser reached `localhost:54545` before the tunnel was
+ready, establish the tunnel and reload the callback URL. Treat that URL as a
+short-lived credential: do not paste it into logs or tickets. CPA hot-loads the
+saved Claude OAuth state; no service restart is required.
+
+Verify both OAuth providers locally and run the public Claude request with an
+explicit Fish interpreter so the command also works from Bash-backed runners:
+
+```bash
+bash tests/integration/cpa_auth_models.sh
+fish scripts/smoke-claude.fish
+```
+
+The Fish smoke must print exactly `claude-ok`.
 
 ## Contract tests
 
@@ -135,14 +165,19 @@ make test-observability
 make test-public
 ```
 
+Install Fish before running these gates; the login contract parses the
+canonical Fish smoke script and `make test-public` executes it.
+
 `make test-public` also loads the real `/home/kirill/p/utility-llm` CPA profile
 and requires `gpt-5.4-mini`, streaming and non-streaming Responses, strict JSON
-Schema, and native `web_search`. That test should be run after utility-llm's
-CPA migration is committed and its local runtime credentials use `CPA_API_KEY`.
+Schema, and native `web_search`, then runs the Fish Claude subscription smoke.
+That test should be run after utility-llm's CPA migration is committed and its
+local runtime credentials use `CPA_API_KEY`.
 
 CPA does not set a server-side default model. Each request selects its model;
-`gpt-5.4-mini` is the automated contract-test baseline, while the documented
-public operator smoke check uses `gpt-5.6-luna` with low reasoning.
+`gpt-5.4-mini` is the automated Codex contract-test baseline, while the
+documented public operator smokes use `gpt-5.6-luna` with low reasoning and
+`claude-sonnet-5`.
 
 ## Backup and restore
 
@@ -201,8 +236,8 @@ and a fresh verified backup until the new version passes.
   and restart the CPA stack if local health is degraded.
 - Tunnel failure: confirm local CPA health, inspect the CPA connector, and
   recreate only `cloudflared` after checking the stored connector token.
-- OAuth failure: keep paid providers absent, repeat device login, and verify the
-  model catalog before restoring traffic.
+- OAuth failure: keep paid providers absent, repeat the affected Codex or Claude
+  login, and verify the model catalog before restoring traffic.
 - Collector stall: check `/status`, disk space, `usage-statistics-enabled`, and
   the private management-key mount; do not expose management publicly.
 - Suspected credential disclosure: stop evidence capture, remove unsafe local

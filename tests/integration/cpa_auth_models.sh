@@ -37,17 +37,36 @@ if ! jq -e --arg model "$MODEL" '.data | any(.id == $model)' "$models" >/dev/nul
   printf 'required model is absent from CPA catalog: %s\n' "$MODEL" >&2
   exit 1
 fi
+if ! jq -e '.data | any(.id == "claude-sonnet-5")' "$models" >/dev/null; then
+  printf 'required Claude subscription model is absent from CPA catalog\n' >&2
+  exit 1
+fi
 
-auth_count=0
+codex_auth_count=0
+claude_auth_count=0
 while IFS= read -r auth_file; do
   mode="$(stat -c '%a' "$auth_file")"
-  [[ "$mode" == 600 ]] || { printf 'Codex OAuth auth file mode is %s, expected 600\n' "$mode" >&2; exit 1; }
+  [[ "$mode" == 600 ]] || { printf 'OAuth auth file mode is %s, expected 600\n' "$mode" >&2; exit 1; }
   owner_uid="$(stat -c '%u' "$auth_file")"
-  [[ "$owner_uid" == "$(id -u)" ]] || { printf 'Codex OAuth auth file is not owned by the operator uid\n' >&2; exit 1; }
-  jq -e '.type == "codex" and (.access_token | type == "string" and length > 0) and (.refresh_token | type == "string" and length > 0)' "$auth_file" >/dev/null
-  auth_count=$((auth_count + 1))
+  [[ "$owner_uid" == "$(id -u)" ]] || { printf 'OAuth auth file is not owned by the operator uid\n' >&2; exit 1; }
+  auth_type="$(jq -r '.type // empty' "$auth_file")"
+  case "$auth_type" in
+    codex)
+      jq -e '(.access_token | type == "string" and length > 0) and (.refresh_token | type == "string" and length > 0)' "$auth_file" >/dev/null
+      codex_auth_count=$((codex_auth_count + 1))
+      ;;
+    claude)
+      jq -e '(.access_token | type == "string" and length > 0) and (.refresh_token | type == "string" and length > 0)' "$auth_file" >/dev/null
+      claude_auth_count=$((claude_auth_count + 1))
+      ;;
+    *)
+      printf 'unsupported OAuth auth type found in canonical auth directory\n' >&2
+      exit 1
+      ;;
+  esac
 done < <(find state/cpa/auths -maxdepth 1 -type f -name '*.json' | sort)
-[[ "$auth_count" -gt 0 ]] || { printf 'no usable Codex OAuth auth file\n' >&2; exit 1; }
+[[ "$codex_auth_count" -gt 0 ]] || { printf 'no usable Codex OAuth auth file\n' >&2; exit 1; }
+[[ "$claude_auth_count" -gt 0 ]] || { printf 'no usable Claude OAuth auth file\n' >&2; exit 1; }
 
 curl -fsS -N --max-time 20 \
   -H "Authorization: Bearer $api_key" \

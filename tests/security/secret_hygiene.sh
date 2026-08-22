@@ -97,5 +97,9 @@ if grep -Eqi 'openai-api-key|OPENAI_API_KEY' state/cpa/config.yaml; then
   printf 'paid OpenAI provider configuration is forbidden\n' >&2
   exit 1
 fi
+if grep -Eqi 'claude-api-key|ANTHROPIC_API_KEY' state/cpa/config.yaml; then
+  printf 'paid Anthropic provider configuration is forbidden\n' >&2
+  exit 1
+fi
 
 printf 'secret hygiene: ok\n'

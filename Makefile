@@ -34,6 +34,7 @@ test-public:
 	@bash tests/e2e/public_contract.sh
 	@bash tests/e2e/public_dashboard.sh
 	@node tests/e2e/utility_llm_shaman.js
+	@fish scripts/smoke-claude.fish
 
 eval:
 	@bash tests/eval/harness_reproducibility.sh
