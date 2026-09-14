@@ -23,6 +23,19 @@ stall. The historical stream sequence was not retained; its upstream cause
 remains unknown. HTTP 200 means streaming headers were sent, not that a model
 completed generation. Missing token usage remains unknown, not zero.
 
+A later hosted clustering request reproduced the same visibility gap with exact
+`cpaRequestId=8431bb71`: its origin access entry was HTTP 200 / 8m58s at
+2026-09-14 16:10:11 UTC+8, and read-only `usage_events` lookup found no row.
+The utility client recorded 28,166 events and 140,858 output characters, with
+headers at 1,016 ms, last output at 538,933 ms, no terminal event, and cancellation
+at 538,945 ms. Native reasoning was `max`. This fresh request was still producing
+output, not an idle connection. The corrected utility cancellation path ended
+after one attempt without accepting partial output or starting redundant repair.
+Prevention/recovery is separately tracked in
+[utility-llm #36](https://github.com/prls-co/utility-llm/issues/36); it must not be
+confused with this lifecycle-accounting gap or retroactively establish the
+unrecorded historical stream sequences.
+
 ## Source explanation and fix boundary
 
 In the deployed [`codex_executor_stream.go`](https://github.com/router-for-me/CLIProxyAPI/blob/856ddd8df746a38a6033dbbf6c140974bf5aea0f/internal/runtime/executor/codex_executor_stream.go),
