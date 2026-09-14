@@ -14,6 +14,7 @@ test-static:
 
 test-unit:
 	@bash tests/unit/public_edge_config.sh
+	@node --test tests/unit/responses_stream_lifecycle.cjs
 
 test-security:
 	@bash tests/security/secret_hygiene.sh
