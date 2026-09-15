@@ -3,6 +3,11 @@
 Owner tracker: [#3](https://github.com/prls-co/CLIProxyAPI-setup/issues/3).
 Upstream correction: [#5819](https://github.com/router-for-me/CLIProxyAPI/issues/5819).
 
+Update 2026-09-15: upstream closed #5819 as not planned because cancelled
+streams intentionally do not produce usage records. The proposed correction
+uses the existing lifecycle log instead, without `PublishFailure` or fabricated
+usage. See [the tested, not-yet-deployed source patch](recovery-deadlines.md).
+
 ## Verified 2026-09-14
 
 `TEST-016` completed one native `max` `gpt-5.6-luna` request and cancelled a
