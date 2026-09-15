@@ -90,3 +90,6 @@ and all hosted clustering calls continue testing native `max` separately.
 `TEST-005` also now applies its existing `MODEL` selection to the outgoing
 request, rather than only checking the catalog and sending the old fixture.
 `TEST-025` checks these boundaries. Existing time limits are unchanged.
+The operator `.env` also retained `MODEL=gpt-5.4-mini`, overriding corrected
+defaults via `load_env`; its non-secret model selection was aligned to Luna.
+Provider keys and rendered CPA runtime policy remain unchanged.
