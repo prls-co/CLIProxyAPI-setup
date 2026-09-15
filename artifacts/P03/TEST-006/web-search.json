@@ -1,12 +1,12 @@
 {
   "type": "response.completed",
   "response": {
-    "id": "resp_0d26d13f81a775d6016a835f79c9a0819aa2a029ebacbf2fa3",
+    "id": "resp_08eb55f8cf3bc851016a8f12b220a087d09a515b8e1bdf9543",
     "object": "response",
-    "created_at": 1786994553,
+    "created_at": 1787761330,
     "status": "completed",
     "background": false,
-    "completed_at": 1786994556,
+    "completed_at": 1787761333,
     "error": null,
     "frequency_penalty": 0.0,
     "incomplete_details": null,
@@ -17,19 +17,19 @@
     "moderation": null,
     "output": [
       {
-        "id": "ws_0d26d13f81a775d6016a835f7a5510819ab1a2427ae137e937",
+        "id": "ws_08eb55f8cf3bc851016a8f12b2a7c087d0aad2c209e6d31a76",
         "type": "web_search_call",
         "status": "completed",
         "action": {
           "type": "search",
           "queries": [
-            "official OpenAI homepage site:openai.com"
+            "OpenAI official homepage"
           ],
-          "query": "official OpenAI homepage site:openai.com"
+          "query": "OpenAI official homepage"
         }
       },
       {
-        "id": "msg_0d26d13f81a775d6016a835f7c3344819aacdd842926e970f9",
+        "id": "msg_08eb55f8cf3bc851016a8f12b5658487d0be01cf62643465df",
         "type": "message",
         "status": "completed",
         "content": [
@@ -37,7 +37,7 @@
             "type": "output_text",
             "annotations": [],
             "logprobs": [],
-            "text": "The official OpenAI homepage is **https://openai.com**."
+            "text": "The official OpenAI homepage is **https://openai.com**. Its domain is **openai.com**."
           }
         ],
         "phase": "final_answer",
@@ -47,7 +47,7 @@
     "parallel_tool_calls": true,
     "presence_penalty": 0.0,
     "previous_response_id": null,
-    "prompt_cache_key": "ee40acfc-f063-4302-b919-c34638712e50",
+    "prompt_cache_key": "54eb0b57-a300-4e2e-b57f-86c079507a38",
     "prompt_cache_retention": "24h",
     "reasoning": {
       "context": "current_turn",
@@ -107,19 +107,19 @@
     "top_p": 0.98,
     "truncation": "disabled",
     "usage": {
-      "input_tokens": 6951,
+      "input_tokens": 6973,
       "input_tokens_details": {
         "cache_write_tokens": 0,
         "cached_tokens": 2560
       },
-      "output_tokens": 50,
+      "output_tokens": 61,
       "output_tokens_details": {
-        "reasoning_tokens": 32
+        "reasoning_tokens": 34
       },
-      "total_tokens": 7001
+      "total_tokens": 7034
     },
     "user": null,
     "metadata": {}
   },
-  "sequence_number": 14
+  "sequence_number": 15
 }
