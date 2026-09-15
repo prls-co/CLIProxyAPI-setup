@@ -80,3 +80,28 @@ status codes only.
 No shared-service restart, restore, upgrade, or live quota manipulation was
 performed. A patched image must follow the existing immutable-image upgrade
 and rollback runbook, including a fresh verified backup and post-deploy gates.
+
+## Fresh hosted recurrence after the client release
+
+Clustering deployed published utility `0.15.6` and completed all three 18-request
+100-item waves: 18/18, 18/18, and 17/18. The failed request was
+`dadc6e64-d722-443a-98b5-6e20efe55ba4`, call
+`939ac666-8b2d-4ae2-a178-0c9abfd32392`, in an 11-item initial batch.
+Its first attempt received an overload SSE failure; the following three
+attempts returned HTTP 503 `auth_unavailable`, each without `Retry-After`.
+Saved utility waits were 317, 915, and 1,030 ms, followed by `attempt_limit`.
+The operation failed after 24.490 seconds, not at the 540-second host deadline.
+
+Exact `cpaRequestId: 261adbad` joins the first attempt to origin HTTP 200 /
+1.61 seconds and a persisted CPAMP failed row at
+`2026-09-15T07:01:22.757498121Z`, native `max`, upstream status 502, latency
+1,608 ms. HTTP 200 identifies committed streaming headers, not completion.
+The subsequent three attempts have no retained CPA request ID or historical
+credential eligibility snapshot; their exact recovery deadline is unknown.
+The one-minute default is source evidence, not a reconstructed deadline.
+
+The deployed client now has jitter and one client retry owner, but cannot honor
+an omitted recovery hint. This fresh recurrence keeps #4 and the all-green
+hosted gate open. No successful-only rerun replaced the failure. The source
+patch above still needs the pinned-image deployment decision and a complete
+post-deployment campaign, not a longer timeout or a consumer rate limiter.
