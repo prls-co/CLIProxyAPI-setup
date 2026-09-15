@@ -11,7 +11,7 @@ load_env
 
 : "${CPAMP_BASE_URL:=http://127.0.0.1:18317}"
 : "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
-: "${MODEL:=gpt-5.4-mini}"
+: "${MODEL:=gpt-5.6-luna}"
 : "${ARTIFACT_PATH:=artifacts/P04/TEST-007-green.json}"
 : "${CORRELATION_ID:=test007-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 

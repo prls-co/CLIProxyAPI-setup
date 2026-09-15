@@ -33,7 +33,7 @@ loadAndApplyRuntimeEnv({ repoRoot: utilityRoot });
 loadDotEnv(path.join(setupRoot, ".env"));
 const api = require(utilityRoot);
 
-const modelId = "gpt-5.4-mini";
+const modelId = "gpt-5.6-luna";
 const expectedBaseUrl = "https://cpa.prls.co/v1";
 const schema = {
   type: "object",
@@ -49,7 +49,7 @@ const schema = {
 async function main() {
   const model = api.MODEL_CONFIG[modelId];
   if (!model || model.provider !== "cpa" || model.apiInferenceType !== "responses") {
-    throw new Error("gpt-5.4-mini is not routed through the CPA Responses profile");
+    throw new Error("gpt-5.6-luna is not routed through the CPA Responses profile");
   }
   const provider = api.PROVIDER_CONFIG[model.provider];
   if (!provider || provider.baseURL !== expectedBaseUrl) {
@@ -67,7 +67,7 @@ async function main() {
     schema,
     tools: [{ type: "web_search", search_context_size: "low" }],
     tool_choice: "required",
-    reasoning: { effort: "none" },
+    reasoning: { effort: "low" },
     max_tokens: 256,
     timeout: 19000,
     overallTimeoutMs: 20000,

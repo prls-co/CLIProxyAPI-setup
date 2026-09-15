@@ -67,3 +67,26 @@ node tests/integration/patched_image_recovery.cjs IMAGE_AT_DIGEST FRESH_PRIVATE_
 
 The pre-deployment backup passed all six file hash/mode/ownership checks.
 Hosted and shared-runtime post-deployment results are recorded separately.
+
+## First image verification found two additional boundaries
+
+The first image was healthy and served a completed Luna native `max` stream.
+Public cancellation request `e3b3641e` reached its cancellation log, but
+`LogFormatter.Format` at `internal/logging/global_logger.go:91` filters fields
+outside `logFieldOrder`. Consequently hook assertions passed while persisted
+text omitted `event`, `outcome`, and `provider_usage_known`. The `prls.2` patch
+keeps the same structured fields and includes their non-secret constant values
+in the cancellation message. The test now formats the captured entry through
+the actual `LogFormatter`; it fails on `prls.1` and passes on the correction.
+No global formatter policy, usage publication, or credential state changes.
+
+The first `make verify` stopped at `TEST-005`: its default `gpt-5.4-mini` is
+absent from both the live catalog and the remote catalog loaded by
+`StartModelsUpdater`. The embedded source snapshot still lists it. The patch
+does not change registry behavior; the test assumed a mutable upstream catalog
+would keep the older model. Smoke fixtures/defaults now use the user-selected
+`gpt-5.6-luna`, at explicit native `low` per setup routing policy. `TEST-016`
+and all hosted clustering calls continue testing native `max` separately.
+`TEST-005` also now applies its existing `MODEL` selection to the outgoing
+request, rather than only checking the catalog and sending the old fixture.
+`TEST-025` checks these boundaries. Existing time limits are unchanged.

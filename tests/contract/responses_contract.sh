@@ -12,8 +12,8 @@ source scripts/lib/common.sh
 load_env
 
 : "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
-: "${MODEL:=gpt-5.4-mini}"
-: "${CPA_VERSION:=v7.2.135}"
+: "${MODEL:=gpt-5.6-luna}"
+: "${CPA_VERSION:=$(jq -r .version images/cpa/source.json)}"
 : "${CASE_FILTER:=}"
 : "${ARTIFACT_DIR:=artifacts/P03/TEST-006}"
 : "${CORRELATION_ID:=test006-$(date -u +%Y%m%dT%H%M%SZ)-$$}"

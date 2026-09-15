@@ -10,7 +10,7 @@ source scripts/lib/common.sh
 load_env
 
 : "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
-: "${MODEL:=gpt-5.4-mini}"
+: "${MODEL:=gpt-5.6-luna}"
 : "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 
 docker compose up -d cli-proxy-api >/dev/null
@@ -28,7 +28,8 @@ done
 api_key="$CPA_API_KEY"
 models="$(mktemp)"
 stream="$(mktemp)"
-trap 'rm -f "$models" "$stream"' EXIT
+request="$(mktemp)"
+trap 'rm -f "$models" "$stream" "$request"' EXIT
 
 curl -fsS --max-time 20 \
   -H "Authorization: Bearer $api_key" \
@@ -68,10 +69,11 @@ done < <(find state/cpa/auths -maxdepth 1 -type f -name '*.json' | sort)
 [[ "$codex_auth_count" -gt 0 ]] || { printf 'no usable Codex OAuth auth file\n' >&2; exit 1; }
 [[ "$claude_auth_count" -gt 0 ]] || { printf 'no usable Claude OAuth auth file\n' >&2; exit 1; }
 
+jq --arg model "$MODEL" '.model = $model' tests/fixtures/responses/basic.json >"$request"
 curl -fsS -N --max-time 20 \
   -H "Authorization: Bearer $api_key" \
   -H 'Content-Type: application/json' \
-  --data-binary @tests/fixtures/responses/basic.json \
+  --data-binary @"$request" \
   "$CPA_LOCAL_BASE_URL/v1/responses" >"$stream"
 
 grep -q 'response.completed' "$stream"

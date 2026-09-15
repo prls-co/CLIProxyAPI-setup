@@ -1,18 +1,20 @@
 diff --git a/internal/runtime/executor/codex_executor_cancel_test.go b/internal/runtime/executor/codex_executor_cancel_test.go
 new file mode 100644
-index 00000000..16043318
+index 00000000..f5c8db99
 --- /dev/null
 +++ b/internal/runtime/executor/codex_executor_cancel_test.go
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,73 @@
 +package executor
 +
 +import (
 +	"context"
 +	"net/http"
 +	"net/http/httptest"
++	"strings"
 +	"testing"
 +
 +	"github.com/router-for-me/CLIProxyAPI/v7/internal/config"
++	"github.com/router-for-me/CLIProxyAPI/v7/internal/logging"
 +	cliproxyauth "github.com/router-for-me/CLIProxyAPI/v7/sdk/cliproxy/auth"
 +	cliproxyexecutor "github.com/router-for-me/CLIProxyAPI/v7/sdk/cliproxy/executor"
 +	sdktranslator "github.com/router-for-me/CLIProxyAPI/v7/sdk/translator"
@@ -60,6 +62,15 @@ index 00000000..16043318
 +			if entry.Data["outcome"] != "cancelled" || entry.Data["provider_usage_known"] != false {
 +				t.Fatalf("wrong cancellation evidence: %v", entry.Data)
 +			}
++			formatted, errFormat := (&logging.LogFormatter{}).Format(entry)
++			if errFormat != nil {
++				t.Fatal(errFormat)
++			}
++			for _, field := range []string{"event=codex.stream.cancelled", "outcome=cancelled", "provider_usage_known=false"} {
++				if !strings.Contains(string(formatted), field) {
++					t.Fatalf("persisted lifecycle log missing %s: %s", field, formatted)
++				}
++			}
 +		}
 +	}
 +	if count != 1 {
@@ -67,10 +78,10 @@ index 00000000..16043318
 +	}
 +}
 diff --git a/internal/runtime/executor/codex_executor_stream.go b/internal/runtime/executor/codex_executor_stream.go
-index d6e62264..ccc68a17 100644
+index d6e62264..a15b7a67 100644
 --- a/internal/runtime/executor/codex_executor_stream.go
 +++ b/internal/runtime/executor/codex_executor_stream.go
-@@ -133,6 +133,17 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+@@ -133,6 +133,19 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
  	out := make(chan cliproxyexecutor.StreamChunk)
  	go func() {
  		defer close(out)
@@ -82,13 +93,15 @@ index d6e62264..ccc68a17 100644
 +					"event":                "codex.stream.cancelled",
 +					"outcome":              "cancelled",
 +					"provider_usage_known": false,
-+				}).Info("Codex response stream cancelled by caller")
++					// LogFormatter intentionally filters arbitrary structured fields.
++					// Retain these non-secret constants in persisted text as well as hooks.
++				}).Info("Codex response stream cancelled by caller: event=codex.stream.cancelled outcome=cancelled provider_usage_known=false")
 +			}
 +		}()
  		defer func() {
  			if errClose := httpResp.Body.Close(); errClose != nil {
  				log.Errorf("codex executor: close response body error: %v", errClose)
-@@ -156,6 +167,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+@@ -156,6 +169,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
  				translatedLine = append([]byte("data: "), data...)
  				eventType := gjson.GetBytes(data, "type").String()
  				if streamErr, terminalBody, ok := codexTerminalFailureErr(data); ok {
@@ -96,7 +109,7 @@ index d6e62264..ccc68a17 100644
  					if errClearReplay := clearCodexReasoningReplayOnInvalidSignature(ctx, replayScope, streamErr.StatusCode(), terminalBody); errClearReplay != nil {
  						helps.RecordAPIResponseError(ctx, e.cfg, errClearReplay)
  						reporter.PublishFailure(ctx, errClearReplay)
-@@ -177,6 +189,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+@@ -177,6 +191,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
  				case "response.output_item.done":
  					collectCodexOutputItemDone(data, outputItemsByIndex, &outputItemsFallback)
  				case "response.completed", "response.incomplete":
@@ -423,4 +436,3 @@ index 7a053b78..456aadd0 100644
  	}
  
  	return availableAuthsFromPriorityBuckets(availableByPriority, allPriorities), nil
-

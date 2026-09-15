@@ -11,7 +11,7 @@ load_env
 
 : "${CPAMP_BASE_URL:=http://127.0.0.1:18317}"
 : "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
-: "${MODEL:=gpt-5.4-mini}"
+: "${MODEL:=gpt-5.6-luna}"
 : "${CPAMP_ADMIN_KEY:?CPAMP_ADMIN_KEY is required in .env}"
 : "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 

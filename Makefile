@@ -16,6 +16,7 @@ test-unit:
 	@bash tests/unit/public_edge_config.sh
 	@node --test tests/unit/responses_stream_lifecycle.cjs
 	@node --test tests/unit/patched_image_contract.cjs
+	@node --test tests/unit/smoke_model_contract.cjs
 
 test-security:
 	@bash tests/security/secret_hygiene.sh

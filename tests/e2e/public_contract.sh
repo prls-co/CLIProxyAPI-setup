@@ -12,8 +12,8 @@ source scripts/lib/common.sh
 load_env
 
 : "${PUBLIC_BASE_URL:=https://cpa.prls.co/v1}"
-: "${MODEL:=gpt-5.4-mini}"
-: "${CPA_VERSION:=v7.2.135}"
+: "${MODEL:=gpt-5.6-luna}"
+: "${CPA_VERSION:=$(jq -r .version images/cpa/source.json)}"
 : "${ARTIFACT_DIR:=artifacts/P05/TEST-010/post-cutover}"
 : "${CORRELATION_ID:=test010-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 
