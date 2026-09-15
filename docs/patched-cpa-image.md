@@ -40,7 +40,7 @@ Full upstream tests have existing reproduced failures described in
 is not an all-green upstream suite claim. Require the local, public, collection,
 backup/recovery and complete hosted clustering gates after image promotion.
 
-## Published image and pre-deployment gate
+## First image and pre-deployment gate (superseded)
 
 - Build source: `c77a5d0486bfcb9ab5f2d7404156526b56db6347`.
 - [Publish workflow](https://github.com/prls-co/CLIProxyAPI-setup/actions/runs/34995869919): passed, including all focused Go tests and compilation.
@@ -93,3 +93,39 @@ request, rather than only checking the catalog and sending the old fixture.
 The operator `.env` also retained `MODEL=gpt-5.4-mini`, overriding corrected
 defaults via `load_env`; its non-secret model selection was aligned to Luna.
 Provider keys and rendered CPA runtime policy remain unchanged.
+
+## Deployed correction: `v7.2.135-prls.2`
+
+- Build source: `0f0b42d137ead26fd1e2fb2632117f23e7645545`.
+- [Publish workflow](https://github.com/prls-co/CLIProxyAPI-setup/actions/runs/34996922032): passed, including focused Go tests, compilation and provenance publication.
+- Index digest: `sha256:4c6edfdbeff8baa252fb1295a14a99d1d4e434051a407e326ded47e6cce83c39`.
+- Linux/amd64 manifest: `sha256:ec5d8f65e2686aa5c71754f1d8cf955a1f4bf1852497e5f423cb3794b4316383`.
+- Running binary SHA-256: `92c7976a11e88216145d132c4673917e5b48f03a3c77426780931c238c843953`.
+- Applied patch SHA-256: `3a86cc53679b243bdc5465d3082912e64b8af32f0b063702a9df86d8e39abdb1`.
+- Compose promotion: `e4ade74182d19e2b2e678cc5ac06a0cfff99c5f4`.
+
+The registry digest, source/version/patch labels, deployed image and running
+binary were read back. Both patched images and the original upstream digest
+remain available for rollback; the original runtime is still the build base.
+The new six-file backup again passed all hash/mode/ownership checks before
+promotion. `TEST-024` passed against this exact digest too.
+
+Final `make verify`, `make test-public`, Compose reproducibility, and
+`tests/eval/recovery_rehearsal.sh` passed. These cover strict schemas in streaming
+and non-streaming Responses, web search, filtering, utility-llm, Claude, public
+authentication, CPAMP persistence/collection and backup/restart recovery.
+Recovery measured 13.284 seconds against the existing 180-second gate. The
+public connector remained unchanged; no live state restore was needed.
+
+The public `TEST-016` probe completed at native `max` in 1.958 seconds, with a
+matching successful CPAMP record. A second request cancelled after
+`response.created` in 809 ms. Exact request correlation found one persisted
+`event=codex.stream.cancelled outcome=cancelled provider_usage_known=false`
+entry and no CPAMP usage record, as intended. This is unknown usage, not zero.
+Raw probe/log/database read-back evidence remains private.
+
+The normal rendered CPA configuration hash remained unchanged throughout.
+Only non-secret operator `MODEL` and `CPA_VERSION` selections were aligned to
+the chosen model/image. No new key, Secret Manager resource, credential mirror,
+provider fallback, concurrency limit, retry count or timeout was introduced.
+Complete concurrent hosted clustering verification follows these service gates.

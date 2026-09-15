@@ -4,17 +4,17 @@ Owner: [#4](https://github.com/prls-co/CLIProxyAPI-setup/issues/4).
 Upstream: [#5842](https://github.com/router-for-me/CLIProxyAPI/issues/5842).
 Client correction: [utility-llm #38](https://github.com/prls-co/utility-llm/issues/38).
 
-Status: source patch implemented and tested, **not deployed**. Replacing the
-shared upstream CPA image with a maintained pinned patched image is awaiting
-the user's deployment choice. `compose.yaml`, runtime configuration, credential
-state, and CPAMP remain unchanged. This patch is retained evidence, not a second
-running provider implementation or an automatic deployment path.
+Status: the user-approved maintained image `v7.2.135-prls.2` is deployed by
+immutable digest. See [build, deployment and rollback evidence](patched-cpa-image.md).
+The CPA runtime configuration hash is unchanged; no credentials, retry policy,
+concurrency control, or CPAMP image was changed. The source patch below is the
+single deployed implementation, built by the explicit publication workflow.
 
 ## Source-level correction
 
-The deployed source is v7.2.135,
+The upstream base is v7.2.135,
 `856ddd8df746a38a6033dbbf6c140974bf5aea0f`. The tested local patch commit is
-`2033572a` on `fix/retry-deadline-propagation`, retained in
+`a57201f4` on `fix/retry-deadline-propagation`, retained in
 `patches/cpa-recovery-deadlines.patch`. Apply only against the specified source
 revision; do not apply it blindly to a different upstream release.
 
@@ -42,7 +42,10 @@ honors that minimum plus jitter; it cannot recover hints that CPA omits.
 For cancellation, `CodexExecutor.ExecuteStream` writes one existing-log lifecycle
 event, `codex.stream.cancelled`, with `outcome: "cancelled"` and
 `provider_usage_known: false`, correlated using `helps.LogWithRequestID`.
-It does not call `PublishFailure`, add a usage record, or penalize credentials.
+The same non-secret constants appear in the log message because `LogFormatter`
+filters arbitrary structured fields; the regression test verifies the actual
+formatted output as well as the hook entry. It does not call `PublishFailure`,
+add a usage record, or penalize credentials.
 Upstream [#5819](https://github.com/router-for-me/CLIProxyAPI/issues/5819) was
 closed as not planned: cancellation exclusion from usage is intentional.
 The required evidence is therefore a lifecycle log, not fabricated CPAMP usage.
@@ -77,9 +80,11 @@ and verified rejected invalid credentials; no model inference or service restart
 was needed for that check. The refreshed `TEST-008` artifact contains hashes and
 status codes only.
 
-No shared-service restart, restore, upgrade, or live quota manipulation was
-performed. A patched image must follow the existing immutable-image upgrade
-and rollback runbook, including a fresh verified backup and post-deploy gates.
+The approved image followed the immutable-image upgrade and rollback runbook:
+fresh verified backup, isolated image recovery test, local/public contracts,
+collection, and recovery rehearsal. No live quota manipulation or production
+state restore was performed. The synthetic recovery fixture uses an isolated
+container and loopback upstream, never real credentials.
 
 ## Fresh hosted recurrence after the client release
 
@@ -100,8 +105,9 @@ The subsequent three attempts have no retained CPA request ID or historical
 credential eligibility snapshot; their exact recovery deadline is unknown.
 The one-minute default is source evidence, not a reconstructed deadline.
 
-The deployed client now has jitter and one client retry owner, but cannot honor
+That client already had jitter and one client retry owner, but could not honor
 an omitted recovery hint. This fresh recurrence keeps #4 and the all-green
 hosted gate open. No successful-only rerun replaced the failure. The source
-patch above still needs the pinned-image deployment decision and a complete
-post-deployment campaign, not a longer timeout or a consumer rate limiter.
+patch is now deployed; the complete post-deployment campaign is recorded in
+the linked deployment evidence, not replaced with a successful-only rerun,
+a longer timeout, or a consumer rate limiter.
