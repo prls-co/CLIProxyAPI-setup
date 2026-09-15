@@ -128,4 +128,31 @@ The normal rendered CPA configuration hash remained unchanged throughout.
 Only non-secret operator `MODEL` and `CPA_VERSION` selections were aligned to
 the chosen model/image. No new key, Secret Manager resource, credential mirror,
 provider fallback, concurrency limit, retry count or timeout was introduced.
-Complete concurrent hosted clustering verification follows these service gates.
+Complete concurrent hosted clustering verification followed these service gates.
+
+## Hosted outcome and remaining consumer issue
+
+The complete follow-up ran two forced output-limit checks, six normal 10-item
+requests, and three sequential waves of 18 concurrent 100-item requests. All
+60 normal requests completed with HTTP 200. Exact 100-item partitions passed
+18/18, 18/18, and 17/18: 53/54, not an all-green semantic gate.
+
+All 27 retried calls recovered from 45 HTTP 429 attempts. The 18 locally
+generated `model_cooldown` errors carried 1–2-second `Retry-After` values;
+saved utility waits honored each minimum plus jitter. No availability retry
+exhaustion, normal output-limit recurrence or HTTP 504 occurred. The temporary
+503 recovery hint is proven by `TEST-024`, not claimed as an observed 503
+recovery in this hosted campaign.
+
+The 100-item cohort's 647 calls, 692 attempts, 1,339 root/attempt artifacts and
+647 Firestore documents were fully read back. CPAMP was queried read-only by
+retained CPA request IDs. It also confirms internal CPA retries separately from
+client attempts; missing/cancelled usage remains unknown, not zero.
+
+The remaining exact-partition failure is a model reference-binding error:
+valid refs for Flint Harbor and Grove Harbor were incorrectly merged, and the
+consumer's second pass cannot split that initial component. Clustering code,
+prompts and build were unchanged. [Clustering #3](https://github.com/prls-co/clustering/issues/3)
+tracks the captured fixture, source-level RCA and separately proposed semantic
+correction. This is not evidence that the CPA patch caused the semantic error,
+nor a reason to hide it with provider retries or image rollback.
