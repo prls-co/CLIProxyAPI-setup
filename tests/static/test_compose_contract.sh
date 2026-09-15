@@ -14,7 +14,7 @@ rendered="$(mktemp)"
 trap 'rm -f "$rendered"' EXIT
 docker compose --project-name cliproxyapi-test --profile public config --format json >"$rendered"
 
-cpa_digest='eceasy/cli-proxy-api@sha256:53162ac4ebf4f399b729a80830ad13e992add2430e1387a54e09a192987f6df3'
+cpa_digest='ghcr.io/prls-co/cli-proxy-api-patched@sha256:1c7851e4c0952ccadb123bb4981dc4d703d1f4c820195cbb895d85b836e436f2'
 cpamp_digest='seakee/cpa-manager-plus@sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351'
 cloudflared_digest='cloudflare/cloudflared@sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9'
 caddy_digest='caddy@sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb'
