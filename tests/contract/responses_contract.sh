@@ -15,17 +15,18 @@ load_env
 : "${MODEL:=gpt-5.4-mini}"
 : "${CPA_VERSION:=v7.2.135}"
 : "${CASE_FILTER:=}"
+: "${ARTIFACT_DIR:=artifacts/P03/TEST-006}"
 : "${CORRELATION_ID:=test006-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 : "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 
-mkdir -p artifacts/P03/TEST-006
+mkdir -p "$ARTIFACT_DIR"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 api_key="$CPA_API_KEY"
 cpa_image="$(docker compose config --format json | jq -r '.services["cli-proxy-api"].image')"
 if [[ -z "$CASE_FILTER" ]]; then
-  metadata_path=artifacts/P03/TEST-006/metadata.ndjson
-  request_hashes_path=artifacts/P03/TEST-006/request-hashes.txt
+  metadata_path="$ARTIFACT_DIR/metadata.ndjson"
+  request_hashes_path="$ARTIFACT_DIR/request-hashes.txt"
 else
   metadata_path="$tmp/metadata.ndjson"
   request_hashes_path="$tmp/request-hashes.txt"
@@ -64,7 +65,7 @@ run_case() {
   fi
   [[ -n "$completed" ]] || { printf 'missing completed event: %s\n' "$name" >&2; return 1; }
   jq -e '.response.status == "completed" and .response.error == null' <<<"$completed" >/dev/null
-  sse_sanitize_event <<<"$completed" >"artifacts/P03/TEST-006/$name.json"
+  sse_sanitize_event <<<"$completed" >"$ARTIFACT_DIR/$name.json"
 
   case "$name" in
     basic)
