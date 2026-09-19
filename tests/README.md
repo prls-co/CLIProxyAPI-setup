@@ -14,7 +14,7 @@ that `claude-sonnet-5` is served through the persisted Claude subscription and
 prints only the expected `claude-ok` sentinel.
 
 `node tests/contract/responses_stream_lifecycle.cjs` is an opt-in `TEST-016`
-diagnostic: it completes one native `max` Luna response and cancels another
+diagnostic: it completes one native `max` Astra response and cancels another
 immediately after `response.created`, using the existing 20-second probe budget.
 It prints only lifecycle metadata and the request-ID suffix from
 `X-CPA-TRACE-ID`, not the credential-selection index or response text. Match

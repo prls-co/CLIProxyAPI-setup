@@ -4,10 +4,10 @@ Pinned, test-gated deployment of CLIProxyAPI (CPA) and CPA Manager Plus for
 the canonical `https://cpa.prls.co/v1` OpenAI-compatible gateway.
 
 The runtime contract is bearer authentication with persisted Codex and Claude
-OAuth subscription access. Automated local and public Codex contract tests use
-`gpt-5.4-mini` as their acceptance baseline. CPA does not configure a
-server-side default model; each request selects its model. The operator smoke
-checks use `gpt-5.6-luna` with low reasoning and `claude-sonnet-5`. No
+OAuth subscription access. Setup-owned local and public Codex contract tests
+use `gpt-6-astra` with low reasoning. CPA does not configure a server-side
+default model; each request selects its model. The operator smoke checks use
+`gpt-6-astra` with low reasoning and `claude-sonnet-5`. No
 pay-per-token OpenAI or Anthropic provider is configured.
 CPA Manager Plus is available at `https://cpa.prls.co/management.html` using
 its native admin-key login. All raw service ports remain loopback-only.
@@ -137,7 +137,7 @@ printf 'header = "Authorization: Bearer %s"\n' "$CPA_API_KEY" | \
 curl -i --config - https://cpa.prls.co/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gpt-5.6-luna",
+    "model": "gpt-6-astra",
     "messages": [
       {
         "role": "user",

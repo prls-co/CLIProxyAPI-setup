@@ -9,7 +9,7 @@ cd "$root"
 source scripts/lib/common.sh
 load_env
 : "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
-: "${MODEL:=gpt-5.6-luna}"
+: "${MODEL:=gpt-6-astra}"
 : "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 
 artifact_dir=artifacts/P03/EVAL-003

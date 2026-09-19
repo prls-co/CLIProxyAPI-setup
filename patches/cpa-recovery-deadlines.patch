@@ -1,6 +1,45 @@
+diff --git a/internal/runtime/executor/codex_executor_stream.go b/internal/runtime/executor/codex_executor_stream.go
+index 87e4d28..5d00126 100644
+--- a/internal/runtime/executor/codex_executor_stream.go
++++ b/internal/runtime/executor/codex_executor_stream.go
+@@ -350,6 +350,18 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+ 
+ 	go func() {
+ 		defer close(out)
++		terminalSeen := false
++		defer func() {
++			if !terminalSeen && ctx.Err() != nil {
++				// Cancellation is lifecycle evidence, not usage or credential failure.
++				helpers := helps.LogWithRequestID(ctx).WithFields(log.Fields{
++					"event":                "codex.stream.cancelled",
++					"outcome":              "cancelled",
++					"provider_usage_known": false,
++				})
++				helpers.Info("Codex response stream cancelled by caller: event=codex.stream.cancelled outcome=cancelled provider_usage_known=false")
++			}
++		}()
+ 		defer func() {
+ 			if errClose := httpResp.Body.Close(); errClose != nil {
+ 				log.Errorf("codex executor: close response body error: %v", errClose)
+@@ -370,6 +382,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+ 				translatedLine = append([]byte("data: "), data...)
+ 				eventType := gjson.GetBytes(data, "type").String()
+ 				if streamErr, terminalBody, ok := codexTerminalFailureErrWithCooling(data, e.modelLevelCooling()); ok {
++					terminalSeen = true
+ 					if errClearReplay := clearCodexReasoningReplayOnInvalidSignature(ctx, replayScope, streamErr.StatusCode(), terminalBody); errClearReplay != nil {
+ 						helps.RecordAPIResponseError(ctx, e.cfg, errClearReplay)
+ 						reporter.PublishFailure(ctx, errClearReplay)
+@@ -404,6 +417,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Auth
+ 				case "response.output_item.done":
+ 					collectCodexOutputItemDone(data, outputItemsByIndex, &outputItemsFallback)
+ 				case "response.completed", "response.incomplete", "response.done":
++					terminalSeen = true
+ 					terminalSuccess = true
+ 					data = normalizeCodexWebsocketCompletion(data)
+ 					if detail, ok := helps.ParseCodexUsage(data); ok {
 diff --git a/internal/runtime/executor/codex_executor_cancel_test.go b/internal/runtime/executor/codex_executor_cancel_test.go
 new file mode 100644
-index 00000000..f5c8db99
+index 0000000..4b76a7b
 --- /dev/null
 +++ b/internal/runtime/executor/codex_executor_cancel_test.go
 @@ -0,0 +1,73 @@
@@ -40,7 +79,7 @@ index 00000000..f5c8db99
 +	defer cancel()
 +	result, err := NewCodexExecutor(&config.Config{}).ExecuteStream(ctx, &cliproxyauth.Auth{Attributes: map[string]string{
 +		"base_url": server.URL, "api_key": "synthetic-not-a-secret",
-+	}}, cliproxyexecutor.Request{Model: "gpt-5.6-luna", Payload: []byte(`{"model":"gpt-5.6-luna","input":"JSON test"}`)}, cliproxyexecutor.Options{
++	}}, cliproxyexecutor.Request{Model: "gpt-6-astra", Payload: []byte(`{"model":"gpt-6-astra","input":"JSON test"}`)}, cliproxyexecutor.Options{
 +		SourceFormat: sdktranslator.FromString("openai-response"), Stream: true,
 +	})
 +	if err != nil {
@@ -77,362 +116,3 @@ index 00000000..f5c8db99
 +		t.Fatalf("cancellation events = %d, want 1", count)
 +	}
 +}
-diff --git a/internal/runtime/executor/codex_executor_stream.go b/internal/runtime/executor/codex_executor_stream.go
-index d6e62264..a15b7a67 100644
---- a/internal/runtime/executor/codex_executor_stream.go
-+++ b/internal/runtime/executor/codex_executor_stream.go
-@@ -133,6 +133,19 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
- 	out := make(chan cliproxyexecutor.StreamChunk)
- 	go func() {
- 		defer close(out)
-+		terminalSeen := false
-+		defer func() {
-+			if !terminalSeen && ctx.Err() != nil {
-+				// Cancellation is lifecycle evidence, not usage or credential failure.
-+				helps.LogWithRequestID(ctx).WithFields(log.Fields{
-+					"event":                "codex.stream.cancelled",
-+					"outcome":              "cancelled",
-+					"provider_usage_known": false,
-+					// LogFormatter intentionally filters arbitrary structured fields.
-+					// Retain these non-secret constants in persisted text as well as hooks.
-+				}).Info("Codex response stream cancelled by caller: event=codex.stream.cancelled outcome=cancelled provider_usage_known=false")
-+			}
-+		}()
- 		defer func() {
- 			if errClose := httpResp.Body.Close(); errClose != nil {
- 				log.Errorf("codex executor: close response body error: %v", errClose)
-@@ -156,6 +169,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
- 				translatedLine = append([]byte("data: "), data...)
- 				eventType := gjson.GetBytes(data, "type").String()
- 				if streamErr, terminalBody, ok := codexTerminalFailureErr(data); ok {
-+					terminalSeen = true
- 					if errClearReplay := clearCodexReasoningReplayOnInvalidSignature(ctx, replayScope, streamErr.StatusCode(), terminalBody); errClearReplay != nil {
- 						helps.RecordAPIResponseError(ctx, e.cfg, errClearReplay)
- 						reporter.PublishFailure(ctx, errClearReplay)
-@@ -177,6 +191,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
- 				case "response.output_item.done":
- 					collectCodexOutputItemDone(data, outputItemsByIndex, &outputItemsFallback)
- 				case "response.completed", "response.incomplete":
-+					terminalSeen = true
- 					terminalSuccess = true
- 					if detail, ok := helps.ParseCodexUsage(data); ok {
- 						reporter.Publish(ctx, detail)
-diff --git a/sdk/api/handlers/handlers_errors.go b/sdk/api/handlers/handlers_errors.go
-index 57df50e0..9b8c65d0 100644
---- a/sdk/api/handlers/handlers_errors.go
-+++ b/sdk/api/handlers/handlers_errors.go
-@@ -67,12 +67,15 @@ func enrichAuthSelectionError(err error, providers []string, model string) error
- 		status = http.StatusServiceUnavailable
- 	}
- 
--	return &coreauth.Error{
--		Code:       authErr.Code,
--		Message:    detail,
--		Retryable:  authErr.Retryable,
--		HTTPStatus: status,
--	}
-+	// Retain locally computed recovery state while enriching the public message.
-+	enriched := *authErr
-+	enriched.Message = detail
-+	enriched.HTTPStatus = status
-+	var carrier interface{ WithAuthError(*coreauth.Error) error }
-+	if errors.As(err, &carrier) {
-+		return carrier.WithAuthError(&enriched)
-+	}
-+	return &enriched
- }
- 
- // WriteErrorResponse writes an error message to the response writer using the HTTP status embedded in the message.
-diff --git a/sdk/api/handlers/retry_deadline_test.go b/sdk/api/handlers/retry_deadline_test.go
-new file mode 100644
-index 00000000..f04ac5e9
---- /dev/null
-+++ b/sdk/api/handlers/retry_deadline_test.go
-@@ -0,0 +1,49 @@
-+package handlers
-+
-+import (
-+	"context"
-+	"fmt"
-+	"net/http"
-+	"net/http/httptest"
-+	"strings"
-+	"testing"
-+	"time"
-+
-+	"github.com/gin-gonic/gin"
-+	coreauth "github.com/router-for-me/CLIProxyAPI/v7/sdk/cliproxy/auth"
-+	coreexecutor "github.com/router-for-me/CLIProxyAPI/v7/sdk/cliproxy/executor"
-+)
-+
-+func TestLocalRecoveryHintsSurviveDefaultHeaderPolicyAndEnrichment(t *testing.T) {
-+	gin.SetMode(gin.TestMode)
-+	for _, quota := range []bool{false, true} {
-+		next := time.Now().Add(time.Minute)
-+		_, err := (&coreauth.RoundRobinSelector{}).Pick(context.Background(), "codex", "gpt-5.6-luna", coreexecutor.Options{}, []*coreauth.Auth{{
-+			ID: "synthetic", Provider: "codex", Unavailable: true, NextRetryAfter: next,
-+			Quota: coreauth.QuotaState{Exceeded: quota},
-+		}})
-+		if err == nil {
-+			t.Fatal("expected unavailable credential")
-+		}
-+		err = enrichAuthSelectionError(fmt.Errorf("selection: %w", err), []string{"codex"}, "gpt-5.6-luna")
-+		for _, streaming := range []bool{false, true} {
-+			recorder := httptest.NewRecorder()
-+			ctx, _ := gin.CreateTestContext(recorder)
-+			ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", nil)
-+			if streaming {
-+				ctx.Request.Header.Set("Accept", "text/event-stream")
-+			}
-+			NewBaseAPIHandlers(nil, nil).WriteErrorResponse(ctx, executionErrorMessage(err))
-+			wantStatus := 503
-+			if quota {
-+				wantStatus = 429
-+			}
-+			if recorder.Code != wantStatus || recorder.Header().Get("Retry-After") != "60" {
-+				t.Fatalf("quota=%t streaming=%t status=%d Retry-After=%q", quota, streaming, recorder.Code, recorder.Header().Get("Retry-After"))
-+			}
-+			if !strings.Contains(recorder.Body.String(), "gpt-5.6-luna") {
-+				t.Fatal("model context was lost")
-+			}
-+		}
-+	}
-+}
-diff --git a/sdk/cliproxy/auth/conductor_selection.go b/sdk/cliproxy/auth/conductor_selection.go
-index 7ee5127e..8e60de8b 100644
---- a/sdk/cliproxy/auth/conductor_selection.go
-+++ b/sdk/cliproxy/auth/conductor_selection.go
-@@ -341,9 +341,9 @@ func (m *Manager) availableAuthsForRouteModelWithPriorityMode(auths []*Auth, pro
- 		}
- 		if reason == blockReasonCooldown {
- 			cooldownCount++
--			if !next.IsZero() && (earliest.IsZero() || next.Before(earliest)) {
--				earliest = next
--			}
-+		}
-+		if reason != blockReasonDisabled && next.After(now) && (earliest.IsZero() || next.Before(earliest)) {
-+			earliest = next
- 		}
- 	}
- 
-@@ -359,7 +359,7 @@ func (m *Manager) availableAuthsForRouteModelWithPriorityMode(auths []*Auth, pro
- 			}
- 			return nil, newModelCooldownError(routeModel, providerForError, resetIn)
- 		}
--		return nil, &Error{Code: "auth_unavailable", Message: "no auth available"}
-+		return nil, newAuthUnavailableError(earliest, now)
- 	}
- 
- 	return availableAuthsFromPriorityBuckets(availableByPriority, allPriorities), nil
-diff --git a/sdk/cliproxy/auth/errors.go b/sdk/cliproxy/auth/errors.go
-index 23814695..270b28fc 100644
---- a/sdk/cliproxy/auth/errors.go
-+++ b/sdk/cliproxy/auth/errors.go
-@@ -1,5 +1,10 @@
- package auth
- 
-+import (
-+	"net/http"
-+	"time"
-+)
-+
- // ErrorCodeRequestScoped identifies failures tied to the current request rather
- // than the selected credential.
- const ErrorCodeRequestScoped = "request_scoped"
-@@ -27,6 +32,39 @@ type Error struct {
- 	HTTPStatus int `json:"http_status,omitempty"`
- }
- 
-+// Keep Error's public four-field layout unchanged for downstream unkeyed literals.
-+type authUnavailableError struct {
-+	cause      *Error
-+	retryAfter time.Duration
-+}
-+
-+func newAuthUnavailableError(next, now time.Time) error {
-+	err := &Error{Code: "auth_unavailable", Message: "no auth available"}
-+	if next.After(now) {
-+		err.HTTPStatus = http.StatusServiceUnavailable
-+		err.Retryable = true
-+		return &authUnavailableError{cause: err, retryAfter: next.Sub(now)}
-+	}
-+	return err
-+}
-+
-+func (e *authUnavailableError) Error() string   { return e.cause.Error() }
-+func (e *authUnavailableError) Unwrap() error   { return e.cause }
-+func (e *authUnavailableError) StatusCode() int { return e.cause.StatusCode() }
-+
-+// WithAuthError retains the trusted deadline when the handler enriches context.
-+func (e *authUnavailableError) WithAuthError(cause *Error) error {
-+	return &authUnavailableError{cause: cause, retryAfter: e.retryAfter}
-+}
-+
-+// Headers exposes only the locally computed recovery hint, never upstream headers.
-+func (e *authUnavailableError) Headers() http.Header {
-+	if e == nil {
-+		return nil
-+	}
-+	return safeRetryAfterHeader(e.retryAfter)
-+}
-+
- // Error implements the error interface.
- func (e *Error) Error() string {
- 	if e == nil {
-diff --git a/sdk/cliproxy/auth/home_concurrency.go b/sdk/cliproxy/auth/home_concurrency.go
-index d3f91774..653090ba 100644
---- a/sdk/cliproxy/auth/home_concurrency.go
-+++ b/sdk/cliproxy/auth/home_concurrency.go
-@@ -263,13 +263,21 @@ func verifyAccountedHomeConcurrencyIdentity(tuple homeConcurrencyTuple, auth *Au
- 	return nil
- }
- 
--// SafeResponseHeaders returns trusted response headers only for CPA's concrete Home busy error.
-+// SafeResponseHeaders returns recovery hints only from CPA's concrete local errors.
- func SafeResponseHeaders(err error) http.Header {
- 	var busy *HomeConcurrencyBusyError
--	if !errors.As(err, &busy) || busy == nil {
--		return nil
-+	if errors.As(err, &busy) && busy != nil {
-+		return busy.SafeResponseHeaders()
-+	}
-+	var cooldown *modelCooldownError
-+	if errors.As(err, &cooldown) && cooldown != nil {
-+		return safeRetryAfterHeader(cooldown.resetIn)
- 	}
--	return busy.SafeResponseHeaders()
-+	var unavailable *authUnavailableError
-+	if errors.As(err, &unavailable) && unavailable != nil {
-+		return unavailable.Headers()
-+	}
-+	return nil
- }
- 
- func safeRetryAfterHeader(retryAfter time.Duration) http.Header {
-diff --git a/sdk/cliproxy/auth/retry_deadline_test.go b/sdk/cliproxy/auth/retry_deadline_test.go
-new file mode 100644
-index 00000000..75181743
---- /dev/null
-+++ b/sdk/cliproxy/auth/retry_deadline_test.go
-@@ -0,0 +1,58 @@
-+package auth
-+
-+import (
-+	"errors"
-+	"fmt"
-+	"testing"
-+	"time"
-+)
-+
-+func TestTemporaryUnavailabilityPreservesRecoveryDeadline(t *testing.T) {
-+	now := time.Now()
-+	temporary := &Auth{ID: "temporary", Provider: "codex", Unavailable: true, NextRetryAfter: now.Add(time.Minute)}
-+	disabled := &Auth{ID: "disabled", Provider: "codex", Disabled: true, NextRetryAfter: now.Add(time.Second)}
-+	for _, auths := range [][]*Auth{{temporary}, {temporary, disabled}} {
-+		for _, selectAuths := range []func() ([]*Auth, error){
-+			func() ([]*Auth, error) { return getAvailableAuths(auths, "codex", "gpt-5.6-luna", now) },
-+			func() ([]*Auth, error) {
-+				return (&Manager{}).availableAuthsForRouteModelWithPriorityMode(auths, "codex", "gpt-5.6-luna", now, false)
-+			},
-+		} {
-+			_, err := selectAuths()
-+			var authErr *Error
-+			if !errors.As(err, &authErr) || authErr.Code != "auth_unavailable" || !authErr.Retryable {
-+				t.Fatalf("expected recoverable auth_unavailable, got %T %v", err, err)
-+			}
-+			if got := SafeResponseHeaders(fmt.Errorf("outer: %w", err)).Get("Retry-After"); got != "60" {
-+				t.Fatalf("Retry-After = %q, want 60", got)
-+			}
-+		}
-+	}
-+	_, err := getAvailableAuths([]*Auth{disabled}, "codex", "gpt-5.6-luna", now)
-+	if got := SafeResponseHeaders(err).Get("Retry-After"); got != "" {
-+		t.Fatalf("disabled credential must not advertise recovery, got %q", got)
-+	}
-+}
-+
-+func TestSchedulerPreservesTemporaryDeadlineWithoutChangingQuotaClassification(t *testing.T) {
-+	now := time.Now()
-+	shard := &modelScheduler{entries: map[string]*scheduledAuth{
-+		"temporary": {auth: &Auth{ID: "temporary"}, state: scheduledStateBlocked, nextRetryAt: now.Add(time.Minute)},
-+		"disabled":  {auth: &Auth{ID: "disabled"}, state: scheduledStateDisabled, nextRetryAt: now.Add(time.Second)},
-+	}}
-+	total, quota, earliest := shard.availabilitySummaryLocked(nil)
-+	if total != 2 || quota != 0 || !earliest.Equal(now.Add(time.Minute)) {
-+		t.Fatalf("unexpected summary: total=%d quota=%d earliest=%v", total, quota, earliest)
-+	}
-+	err := shard.unavailableErrorLocked("codex", "gpt-5.6-luna", nil)
-+	if got := SafeResponseHeaders(err).Get("Retry-After"); got != "60" {
-+		t.Fatalf("scheduler Retry-After = %q, want 60", got)
-+	}
-+	delete(shard.entries, "disabled")
-+	shard.entries["temporary"].state = scheduledStateCooldown
-+	err = shard.unavailableErrorLocked("codex", "gpt-5.6-luna", nil)
-+	var cooldown *modelCooldownError
-+	if !errors.As(err, &cooldown) || cooldown.StatusCode() != 429 {
-+		t.Fatalf("quota cooldown contract changed: %T %v", err, err)
-+	}
-+}
-diff --git a/sdk/cliproxy/auth/scheduler.go b/sdk/cliproxy/auth/scheduler.go
-index 8bec6123..22ca1d34 100644
---- a/sdk/cliproxy/auth/scheduler.go
-+++ b/sdk/cliproxy/auth/scheduler.go
-@@ -485,7 +485,7 @@ func (s *authScheduler) mixedUnavailableErrorLocked(providers []string, model st
- 		}
- 		return newModelCooldownError(model, "", resetIn)
- 	}
--	return &Error{Code: "auth_unavailable", Message: "no auth available"}
-+	return newAuthUnavailableError(earliest, now)
- }
- 
- // scheduledAuthPredicate filters request-ineligible auths before scheduler state advances.
-@@ -895,7 +895,7 @@ func (m *modelScheduler) unavailableErrorLocked(provider, model string, predicat
- 		}
- 		return newModelCooldownError(model, providerForError, resetIn)
- 	}
--	return &Error{Code: "auth_unavailable", Message: "no auth available"}
-+	return newAuthUnavailableError(earliest, now)
- }
- 
- // availabilitySummaryLocked summarizes total candidates, cooldown count, and earliest retry time.
-@@ -914,10 +914,12 @@ func (m *modelScheduler) availabilitySummaryLocked(predicate func(*scheduledAuth
- 		if entry == nil || entry.auth == nil {
- 			continue
- 		}
--		if entry.state != scheduledStateCooldown {
-+		if entry.state != scheduledStateCooldown && entry.state != scheduledStateBlocked {
- 			continue
- 		}
--		cooldownCount++
-+		if entry.state == scheduledStateCooldown {
-+			cooldownCount++
-+		}
- 		if !entry.nextRetryAt.IsZero() && (earliest.IsZero() || entry.nextRetryAt.Before(earliest)) {
- 			earliest = entry.nextRetryAt
- 		}
-diff --git a/sdk/cliproxy/auth/selector.go b/sdk/cliproxy/auth/selector.go
-index 7a053b78..456aadd0 100644
---- a/sdk/cliproxy/auth/selector.go
-+++ b/sdk/cliproxy/auth/selector.go
-@@ -260,9 +260,9 @@ func collectAvailableByPriority(auths []*Auth, model string, now time.Time) (ava
- 		}
- 		if reason == blockReasonCooldown {
- 			cooldownCount++
--			if !next.IsZero() && (earliest.IsZero() || next.Before(earliest)) {
--				earliest = next
--			}
-+		}
-+		if reason != blockReasonDisabled && next.After(now) && (earliest.IsZero() || next.Before(earliest)) {
-+			earliest = next
- 		}
- 	}
- 	return available, cooldownCount, earliest
-@@ -294,7 +294,7 @@ func getAvailableAuthsWithPriorityMode(auths []*Auth, provider, model string, no
- 			}
- 			return nil, newModelCooldownError(model, providerForError, resetIn)
- 		}
--		return nil, &Error{Code: "auth_unavailable", Message: "no auth available"}
-+		return nil, newAuthUnavailableError(earliest, now)
- 	}
- 
- 	return availableAuthsFromPriorityBuckets(availableByPriority, allPriorities), nil

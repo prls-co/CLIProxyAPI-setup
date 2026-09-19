@@ -12,7 +12,7 @@ source scripts/lib/common.sh
 load_env
 
 : "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
-: "${MODEL:=gpt-5.6-luna}"
+: "${MODEL:=gpt-6-astra}"
 : "${CPA_VERSION:=$(jq -r .version images/cpa/source.json)}"
 : "${CASE_FILTER:=}"
 : "${ARTIFACT_DIR:=artifacts/P03/TEST-006}"

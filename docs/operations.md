@@ -169,15 +169,17 @@ Install Fish before running these gates; the login contract parses the
 canonical Fish smoke script and `make test-public` executes it.
 
 `make test-public` also loads the real `/home/kirill/p/utility-llm` CPA profile
-and requires `gpt-5.4-mini`, streaming and non-streaming Responses, strict JSON
-Schema, and native `web_search`, then runs the Fish Claude subscription smoke.
-That test should be run after utility-llm's CPA migration is committed and its
-local runtime credentials use `CPA_API_KEY`.
+and requires its current `gpt-5.6-luna` consumer profile, streaming and
+non-streaming Responses, strict JSON Schema, and native `web_search`, then runs
+the Fish Claude subscription smoke. That test should be run after
+utility-llm's CPA migration is committed and its local runtime credentials use
+`CPA_API_KEY`.
 
 CPA does not set a server-side default model. Each request selects its model;
-`gpt-5.4-mini` is the automated Codex contract-test baseline, while the
-documented public operator smokes use `gpt-5.6-luna` with low reasoning and
-`claude-sonnet-5`.
+`gpt-6-astra` is the setup-owned automated Codex contract-test baseline and the
+documented public operator smoke model, with low reasoning. The separate
+utility-llm consumer probe currently remains on `gpt-5.6-luna`. Claude smoke
+uses `claude-sonnet-5`.
 
 ## Backup and restore
 

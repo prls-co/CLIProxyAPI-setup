@@ -73,7 +73,7 @@ async function main() {
       headers: { Authorization: `Bearer ${env.CPA_API_KEY}`, "Content-Type": "application/json" },
       signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]),
       body: JSON.stringify({
-        model: "gpt-5.6-luna", stream: true, reasoning: { effort: "max" },
+        model: "gpt-6-astra", stream: true, reasoning: { effort: "max" },
         input: "Reply with the single word READY.",
       }),
     });

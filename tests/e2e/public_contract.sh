@@ -12,7 +12,7 @@ source scripts/lib/common.sh
 load_env
 
 : "${PUBLIC_BASE_URL:=https://cpa.prls.co/v1}"
-: "${MODEL:=gpt-5.6-luna}"
+: "${MODEL:=gpt-6-astra}"
 : "${CPA_VERSION:=$(jq -r .version images/cpa/source.json)}"
 : "${ARTIFACT_DIR:=artifacts/P05/TEST-010/post-cutover}"
 : "${CORRELATION_ID:=test010-$(date -u +%Y%m%dT%H%M%SZ)-$$}"

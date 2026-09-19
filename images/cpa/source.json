@@ -1,9 +1,9 @@
 {
-  "version": "v7.2.135-prls.2",
-  "upstreamCommit": "856ddd8df746a38a6033dbbf6c140974bf5aea0f",
-  "patchSha256": "3a86cc53679b243bdc5465d3082912e64b8af32f0b063702a9df86d8e39abdb1",
+  "version": "v7.3.8-prls.3",
+  "upstreamCommit": "c93978c4ea2e908255a2a06c37599fda3651554a",
+  "patchSha256": "50141c6d2fec71ddb8627a77aa4c0db6bb9bd3feb4b2f8a93097064d0fc15660",
   "builderImage": "golang:1.26-bookworm@sha256:9fdc884aacc3bec89b20ffc69f4bb369c78210e3e4f600387b5128b12c199f81",
-  "runtimeImage": "eceasy/cli-proxy-api@sha256:53162ac4ebf4f399b729a80830ad13e992add2430e1387a54e09a192987f6df3",
+  "runtimeImage": "eceasy/cli-proxy-api@sha256:6c2c8a7904799bd29a3f7f92a598555d8321b6a5682000b87af4495c5704fa72",
   "imageRepository": "ghcr.io/prls-co/cli-proxy-api-patched",
   "platform": "linux/amd64"
 }

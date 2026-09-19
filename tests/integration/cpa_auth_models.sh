@@ -10,7 +10,7 @@ source scripts/lib/common.sh
 load_env
 
 : "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
-: "${MODEL:=gpt-5.6-luna}"
+: "${MODEL:=gpt-6-astra}"
 : "${CPA_API_KEY:?CPA_API_KEY is required in .env}"
 
 docker compose up -d cli-proxy-api >/dev/null
@@ -40,6 +40,15 @@ if ! jq -e --arg model "$MODEL" '.data | any(.id == $model)' "$models" >/dev/nul
 fi
 if ! jq -e '.data | any(.id == "claude-sonnet-5")' "$models" >/dev/null; then
   printf 'required Claude subscription model is absent from CPA catalog\n' >&2
+  exit 1
+fi
+if ! jq -e '
+  .data[]
+  | select(.id == "gpt-6-astra")
+  | (.thinking.levels // []) as $levels
+  | (["low", "medium", "high", "xhigh", "max"] - $levels | length == 0)
+' "$models" >/dev/null; then
+  printf 'GPT-6 Astra with required reasoning levels is absent from CPA catalog\n' >&2
   exit 1
 fi
 
