@@ -4,19 +4,21 @@ Owner: [#4](https://github.com/prls-co/CLIProxyAPI-setup/issues/4).
 Upstream: [#5842](https://github.com/router-for-me/CLIProxyAPI/issues/5842).
 Client correction: [utility-llm #38](https://github.com/prls-co/utility-llm/issues/38).
 
-Status: the user-approved maintained image `v7.2.135-prls.2` is deployed by
-immutable digest. See [build, deployment and rollback evidence](patched-cpa-image.md).
+Status: the maintained image `v7.3.8-prls.3` is deployed by immutable digest.
+See [build, deployment and rollback evidence](patched-cpa-image.md).
 The CPA runtime configuration hash is unchanged; no credentials, retry policy,
 concurrency control, or CPAMP image was changed. The source patch below is the
 single deployed implementation, built by the explicit publication workflow.
 
 ## Source-level correction
 
-The upstream base is v7.2.135,
-`856ddd8df746a38a6033dbbf6c140974bf5aea0f`. The tested local patch commit is
-`a57201f4` on `fix/retry-deadline-propagation`, retained in
-`patches/cpa-recovery-deadlines.patch`. Apply only against the specified source
-revision; do not apply it blindly to a different upstream release.
+The current upstream base is v7.3.8,
+`c93978c4ea2e908255a2a06c37599fda3651554a`. Its recovery-deadline behavior is
+already upstream. The retained local patch in
+`patches/cpa-recovery-deadlines.patch` adds only cancellation lifecycle evidence
+and must be applied only to that pinned revision.
+
+## Historical v7.2.135 recovery correction
 
 `collectAvailableByPriority`,
 `availableAuthsForRouteModelWithPriorityMode`, and

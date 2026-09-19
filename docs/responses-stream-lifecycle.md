@@ -3,10 +3,19 @@
 Owner tracker: [#3](https://github.com/prls-co/CLIProxyAPI-setup/issues/3).
 Upstream correction: [#5819](https://github.com/router-for-me/CLIProxyAPI/issues/5819).
 
-Update 2026-09-15: upstream closed #5819 as not planned because cancelled
-streams intentionally do not produce usage records. The proposed correction
-uses the existing lifecycle log instead, without `PublishFailure` or fabricated
-usage. See [the tested, not-yet-deployed source patch](recovery-deadlines.md).
+Update 2026-09-19: upstream closed #5819 as not planned because cancelled
+streams intentionally do not produce usage records. CPA v7.3.8-prls.3 is now
+deployed by immutable digest; its local patch uses the existing lifecycle log,
+without `PublishFailure` or fabricated usage. See the current
+[build and deployment evidence](patched-cpa-image.md).
+
+## Current v7.3.8 verification
+
+The deployed image passed the focused stream executor tests and the live
+`TEST-016` diagnostic. A native `max` request completed with its usage metadata;
+a second request was cancelled after `response.created` and produced one
+`codex.stream.cancelled` lifecycle event with unknown provider usage. The full
+Responses contract also completed on `gpt-6-astra`.
 
 ## Verified 2026-09-14
 
@@ -41,7 +50,7 @@ Prevention/recovery is separately tracked in
 confused with this lifecycle-accounting gap or retroactively establish the
 unrecorded historical stream sequences.
 
-## Source explanation and fix boundary
+## Historical source explanation and fix boundary (pre-v7.3.8)
 
 In the deployed [`codex_executor_stream.go`](https://github.com/router-for-me/CLIProxyAPI/blob/856ddd8df746a38a6033dbbf6c140974bf5aea0f/internal/runtime/executor/codex_executor_stream.go),
 `ctx.Done()` while forwarding chunks and `ctx.Err()` after a scanner error

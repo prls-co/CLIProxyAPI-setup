@@ -14,7 +14,8 @@ test("TEST-025 Responses fixtures request Astra low; TEST-016 separately certifi
     assert.deepEqual(fixture.reasoning, { effort: "low" }, file);
   }
   const readiness = fs.readFileSync(path.join(root, "tests/integration/cpa_auth_models.sh"), "utf8");
-  assert.match(readiness, /jq --arg model "\$MODEL" '\.model = \$model'/);
+  assert.match(readiness, /jq --arg model "\$MODEL"/);
+  assert.match(readiness, /for effort in low medium high xhigh max/);
   assert.match(readiness, /--data-binary @"\$request"/);
   const contract = fs.readFileSync(path.join(root, "tests/contract/responses_contract.sh"), "utf8");
   assert.match(contract, /"\$ARTIFACT_DIR\/\$name\.json"/);

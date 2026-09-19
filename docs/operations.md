@@ -219,12 +219,15 @@ make test-public
 
 ## Upgrade
 
-The current pinned CPA release is `v7.2.135-prls.2`, built on 2026-09-15, with
+The current pinned CPA release is `v7.3.8-prls.3`, built on 2026-09-19, with
 image digest
-`ghcr.io/prls-co/cli-proxy-api-patched@sha256:4c6edfdbeff8baa252fb1295a14a99d1d4e434051a407e326ded47e6cce83c39`.
+`ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288`.
 See the [maintained image build and rollback contract](patched-cpa-image.md).
-The immediate rollback pin is upstream `v7.2.135`:
-`eceasy/cli-proxy-api@sha256:53162ac4ebf4f399b729a80830ad13e992add2430e1387a54e09a192987f6df3`.
+The immediate rollback pin is the previous maintained image
+`v7.2.135-prls.2`:
+`ghcr.io/prls-co/cli-proxy-api-patched@sha256:4c6edfdbeff8baa252fb1295a14a99d1d4e434051a407e326ded47e6cce83c39`.
+The v7.3.8 upstream runtime base is
+`eceasy/cli-proxy-api@sha256:6c2c8a7904799bd29a3f7f92a598555d8321b6a5682000b87af4495c5704fa72`.
 An older rollback pin was `v7.2.80` with image digest
 `eceasy/cli-proxy-api@sha256:6f5bcee0c3b8d0536f4a3f0f5cb9fd0b7d2e17196dd40d30f11aec9cc2f5f161`.
 

@@ -40,6 +40,21 @@ Full upstream tests have existing reproduced failures described in
 is not an all-green upstream suite claim. Require the local, public, collection,
 backup/recovery and complete hosted clustering gates after image promotion.
 
+## Current Astra release: `v7.3.8-prls.3`
+
+- Upstream source: `c93978c4ea2e908255a2a06c37599fda3651554a` (`v7.3.8`).
+- Published tag: `ghcr.io/prls-co/cli-proxy-api-patched:v7.3.8-prls.3-f375487d29a06bd4cb0ad204cc19dbcf6e7dfb6d`.
+- Index digest: `sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288`.
+- Linux/amd64 manifest: `sha256:9981fc7dcf07340b01f9d3808b880d1f0c6966641713f361bc061cf4763fbbe6`.
+- Running binary SHA-256: `cfbb273fe3d7dcb1c9d5f3d3c3b29147ba8f306cdc531fe036df10066543e29e`.
+- Applied patch SHA-256: `50141c6d2fec71ddb8627a77aa4c0db6bb9bd3feb4b2f8a93097064d0fc15660`.
+- Runtime base: `eceasy/cli-proxy-api@sha256:6c2c8a7904799bd29a3f7f92a598555d8321b6a5682000b87af4495c5704fa72`.
+
+Compose is promoted to the index digest above. Docker gates passed, followed by
+live Astra requests at `low`, `medium`, `high`, `xhigh`, and `max`, the full
+Responses contract, and the cancellation lifecycle diagnostic. The normal
+stack was recreated from the immutable digest and reported healthy.
+
 ## First image and pre-deployment gate (superseded)
 
 - Build source: `c77a5d0486bfcb9ab5f2d7404156526b56db6347`.

@@ -42,13 +42,8 @@ if ! jq -e '.data | any(.id == "claude-sonnet-5")' "$models" >/dev/null; then
   printf 'required Claude subscription model is absent from CPA catalog\n' >&2
   exit 1
 fi
-if ! jq -e '
-  .data[]
-  | select(.id == "gpt-6-astra")
-  | (.thinking.levels // []) as $levels
-  | (["low", "medium", "high", "xhigh", "max"] - $levels | length == 0)
-' "$models" >/dev/null; then
-  printf 'GPT-6 Astra with required reasoning levels is absent from CPA catalog\n' >&2
+if ! jq -e '.data | any(.id == "gpt-6-astra")' "$models" >/dev/null; then
+  printf 'GPT-6 Astra is absent from CPA catalog\n' >&2
   exit 1
 fi
 
@@ -78,14 +73,17 @@ done < <(find state/cpa/auths -maxdepth 1 -type f -name '*.json' | sort)
 [[ "$codex_auth_count" -gt 0 ]] || { printf 'no usable Codex OAuth auth file\n' >&2; exit 1; }
 [[ "$claude_auth_count" -gt 0 ]] || { printf 'no usable Claude OAuth auth file\n' >&2; exit 1; }
 
-jq --arg model "$MODEL" '.model = $model' tests/fixtures/responses/basic.json >"$request"
-curl -fsS -N --max-time 20 \
-  -H "Authorization: Bearer $api_key" \
-  -H 'Content-Type: application/json' \
-  --data-binary @"$request" \
-  "$CPA_LOCAL_BASE_URL/v1/responses" >"$stream"
-
-grep -q 'response.completed' "$stream"
-grep -q 'CPA_AUTH_READY' "$stream"
+for effort in low medium high xhigh max; do
+  jq --arg model "$MODEL" --arg effort "$effort" \
+    '.model = $model | .reasoning.effort = $effort' \
+    tests/fixtures/responses/basic.json >"$request"
+  curl -fsS -N --max-time 20 \
+    -H "Authorization: Bearer $api_key" \
+    -H 'Content-Type: application/json' \
+    --data-binary @"$request" \
+    "$CPA_LOCAL_BASE_URL/v1/responses" >"$stream"
+  grep -q 'response.completed' "$stream"
+  grep -q 'CPA_AUTH_READY' "$stream"
+done
 
 printf 'CPA auth and model readiness: ok\n'
