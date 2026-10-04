@@ -143,6 +143,11 @@ ready, establish the tunnel and reload the callback URL. Treat that URL as a
 short-lived credential: do not paste it into logs or tickets. CPA hot-loads the
 saved Claude OAuth state; no service restart is required.
 
+The login wrapper requires a fresh, unexpired OAuth bundle written during the
+current attempt. A timeout or an old credential file cannot count as success,
+even if the underlying CLI exits with status zero. If authorization times out,
+start a fresh login attempt and open its new URL.
+
 Verify both OAuth providers locally and run the public Claude request with an
 explicit Fish interpreter so the command also works from Bash-backed runners:
 

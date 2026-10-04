@@ -35,3 +35,9 @@ The unit target checks negative cases and fragmented SSE. Sanitized reasoning
 and consumer acceptance evidence is written under `artifacts/P07/`.
 See [reasoning policy](../docs/reasoning-effort.md) for configuration ownership
 and the dated per-model capability snapshot.
+
+`TEST-027` exercises the real Claude login wrapper in an isolated workspace
+with a mocked Docker command and an interactive terminal. It rejects expired,
+unchanged, disabled, malformed, and incomplete credentials, including a CLI
+timeout that returns zero. It accepts newly refreshed OAuth state with UTC or
+an explicit timezone offset. No real credential or model call is used.

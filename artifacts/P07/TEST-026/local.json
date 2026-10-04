@@ -1,7 +1,7 @@
 {
   "test": "TEST-026",
   "status": "pass",
-  "checkedAt": "2026-10-04T05:25:24.471Z",
+  "checkedAt": "2026-10-04T07:52:54.124Z",
   "route": "local",
   "results": [
     {
@@ -12,7 +12,7 @@
       "status": "completed",
       "strictSchema": true,
       "originVerified": false,
-      "durationMs": 2953
+      "durationMs": 1716
     },
     {
       "model": "gpt-5.6-luna",
@@ -22,7 +22,7 @@
       "status": "completed",
       "strictSchema": true,
       "originVerified": false,
-      "durationMs": 3558
+      "durationMs": 1834
     },
     {
       "model": "gpt-5.6-luna",
@@ -32,7 +32,7 @@
       "status": "completed",
       "strictSchema": true,
       "originVerified": false,
-      "durationMs": 1552
+      "durationMs": 2843
     },
     {
       "model": "gpt-5.6-luna",
@@ -42,21 +42,11 @@
       "status": "completed",
       "strictSchema": true,
       "originVerified": false,
-      "durationMs": 1641
+      "durationMs": 4313
     },
     {
       "model": "gpt-6-astra",
       "stream": true,
-      "requestedEffort": "low",
-      "effectiveEffort": "low",
-      "status": "completed",
-      "strictSchema": true,
-      "originVerified": false,
-      "durationMs": 1970
-    },
-    {
-      "model": "gpt-6-astra",
-      "stream": false,
       "requestedEffort": "low",
       "effectiveEffort": "low",
       "status": "completed",
@@ -66,13 +56,23 @@
     },
     {
       "model": "gpt-6-astra",
+      "stream": false,
+      "requestedEffort": "low",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": false,
+      "durationMs": 3016
+    },
+    {
+      "model": "gpt-6-astra",
       "stream": true,
       "requestedEffort": "none",
       "effectiveEffort": "low",
       "status": "completed",
       "strictSchema": true,
       "originVerified": false,
-      "durationMs": 2333
+      "durationMs": 3118
     },
     {
       "model": "gpt-6-astra",
@@ -82,7 +82,7 @@
       "status": "completed",
       "strictSchema": true,
       "originVerified": false,
-      "durationMs": 2357
+      "durationMs": 2617
     }
   ]
 }

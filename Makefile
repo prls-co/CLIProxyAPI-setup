@@ -18,6 +18,7 @@ test-unit:
 	@node --test tests/unit/patched_image_contract.cjs
 	@node --test tests/unit/smoke_model_contract.cjs
 	@node --test tests/unit/reasoning_effort.cjs
+	@node --test tests/unit/claude_login.cjs
 
 test-security:
 	@bash tests/security/secret_hygiene.sh

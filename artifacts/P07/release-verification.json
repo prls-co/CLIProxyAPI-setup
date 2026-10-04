@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-10-04T05:36:12.938435+00:00",
-  "releaseStatus": "awaiting-claude-signin",
+  "checkedAt": "2026-10-04T07:58:14.065804+00:00",
+  "releaseStatus": "validated-before-publication",
   "baseSetupCommit": "f447bf5cba7aa28f6a242284d166b338e37a4d47",
   "utilityLlmCommit": "3f04daf6aea2f6eabbdc6003fd55dbd14fd055e1",
   "policy": "lowest supported effort for the selected model through the selected route",
@@ -12,13 +12,14 @@
   },
   "gates": {
     "make verify": "pass",
-    "make test-public": "fail: Claude subscription HTTP 503",
+    "make test-public": "pass",
     "make eval": "pass",
     "TEST-016 lifecycle": "pass",
     "TEST-024 isolated image recovery": "pass",
     "utility-llm reasoning-effort behavior": "pass",
     "TEST-026 local and public": "pass",
-    "TEST-015 contracted lowest and native web search": "pass"
+    "TEST-015 contracted lowest and native web search": "pass",
+    "TEST-027 fresh Claude OAuth validation": "pass"
   },
   "reasoningRegressionCases": {
     "local": 8,
@@ -38,8 +39,8 @@
     "strict_schema_conformance_rate": 1.0,
     "combined_search_schema_conformance_rate": 1.0,
     "combined_search_call_rate": 1.0,
-    "max_request_seconds": 6.533,
-    "mean_request_seconds": 3.7143333333333333,
+    "max_request_seconds": 11.192,
+    "mean_request_seconds": 4.864666666666667,
     "strict_wilson_95_ci": [
       0.7224672001371107,
       0.9999999999999999
@@ -57,13 +58,13 @@
     "collected_count": 5,
     "usage_event_completeness": 1.0,
     "insertion_lag_seconds": {
-      "mean": 0.0032,
-      "standard_deviation": 0.00116619037896906,
-      "p50": 0.003,
-      "p95": 0.005,
+      "mean": 0.0034000000000000002,
+      "standard_deviation": 0.0008,
+      "p50": 0.004,
+      "p95": 0.004,
       "bootstrap_mean_95_ci": [
-        0.0022,
-        0.0042
+        0.0026,
+        0.004
       ]
     },
     "thresholds": {
@@ -74,52 +75,52 @@
     "samples": [
       {
         "seed": 6101,
-        "correlation_id": "eval004-6101-20261004T053024Z",
-        "cpamp_request_id": "97c681fd",
+        "correlation_id": "eval004-6101-20261004T075455Z",
+        "cpamp_request_id": "7aff502b",
         "correlation_method": "serial event-count delta and timestamp window",
-        "timestamp_ms": 1791091824487,
-        "request_latency_ms": 3739,
-        "created_at_ms": 1791091828229,
-        "collection_lag_ms": 3
+        "timestamp_ms": 1791100495629,
+        "request_latency_ms": 1422,
+        "created_at_ms": 1791100497055,
+        "collection_lag_ms": 4
       },
       {
         "seed": 6102,
-        "correlation_id": "eval004-6102-20261004T053033Z",
-        "cpamp_request_id": "a8175e5f",
+        "correlation_id": "eval004-6102-20261004T075502Z",
+        "cpamp_request_id": "ce6205b3",
         "correlation_method": "serial event-count delta and timestamp window",
-        "timestamp_ms": 1791091833308,
-        "request_latency_ms": 3371,
-        "created_at_ms": 1791091836681,
+        "timestamp_ms": 1791100502855,
+        "request_latency_ms": 1852,
+        "created_at_ms": 1791100504709,
         "collection_lag_ms": 2
       },
       {
         "seed": 6103,
-        "correlation_id": "eval004-6103-20261004T053042Z",
-        "cpamp_request_id": "6b44b658",
+        "correlation_id": "eval004-6103-20261004T075510Z",
+        "cpamp_request_id": "80df35bb",
         "correlation_method": "serial event-count delta and timestamp window",
-        "timestamp_ms": 1791091842277,
-        "request_latency_ms": 1359,
-        "created_at_ms": 1791091843638,
-        "collection_lag_ms": 2
+        "timestamp_ms": 1791100510899,
+        "request_latency_ms": 1737,
+        "created_at_ms": 1791100512640,
+        "collection_lag_ms": 4
       },
       {
         "seed": 6104,
-        "correlation_id": "eval004-6104-20261004T053049Z",
-        "cpamp_request_id": "31ee95fb",
+        "correlation_id": "eval004-6104-20261004T075518Z",
+        "cpamp_request_id": "f6af9113",
         "correlation_method": "serial event-count delta and timestamp window",
-        "timestamp_ms": 1791091849161,
-        "request_latency_ms": 1798,
-        "created_at_ms": 1791091850964,
-        "collection_lag_ms": 5
+        "timestamp_ms": 1791100519011,
+        "request_latency_ms": 2181,
+        "created_at_ms": 1791100521195,
+        "collection_lag_ms": 3
       },
       {
         "seed": 6105,
-        "correlation_id": "eval004-6105-20261004T053056Z",
-        "cpamp_request_id": "1f8b91b1",
+        "correlation_id": "eval004-6105-20261004T075527Z",
+        "cpamp_request_id": "640fd6ff",
         "correlation_method": "serial event-count delta and timestamp window",
-        "timestamp_ms": 1791091856046,
-        "request_latency_ms": 1839,
-        "created_at_ms": 1791091857889,
+        "timestamp_ms": 1791100527210,
+        "request_latency_ms": 1502,
+        "created_at_ms": 1791100528716,
         "collection_lag_ms": 4
       }
     ]
@@ -133,16 +134,16 @@
     "restore_hash_match_rate": 1.0,
     "restore_mode_match_rate": 1.0,
     "restore_ownership_match_rate": 1.0,
-    "private_recovery_seconds": 16.108,
+    "private_recovery_seconds": 15.69,
     "private_recovery_standard_deviation": 0,
     "private_recovery_95_ci": [
-      16.108,
-      16.108
+      15.69,
+      15.69
     ],
     "final_local_contract": 1,
     "final_public_contract": 1,
     "gateway": "cpa",
-    "backup_archive": "cpa-state-20261004T053103Z-3890729.tar.gz",
+    "backup_archive": "cpa-state-20261004T075534Z-615194.tar.gz",
     "thresholds": {
       "artifact_completeness": 1.0,
       "restore_hash_match_rate": 1.0,
@@ -150,23 +151,50 @@
       "final_public_contract": 1
     }
   },
-  "remainingGate": {
-    "provider": "Claude OAuth",
-    "publicSmokeHttpStatus": 503,
-    "localControlHttpStatus": 503,
-    "existingCpaRefreshEndpointHttpStatus": 500,
-    "upstreamRefreshHttpStatus": 400,
-    "upstreamRefreshError": "invalid_grant: refresh token expired",
-    "requiredAction": "renew with scripts/cpa-claude-login.sh, then rerun full gates before push and production reconciliation"
-  },
   "publication": {
     "pushedToMain": false,
     "releaseReconciled": false,
     "issue2Closed": false
   },
   "privateLogSha256": {
-    "verify.log": "043b50e9e7889c77198364c19841f5368c419041dfb0d17ee18aa2c63e1d9ce8",
-    "public.log": "9f37c751a2173504ccd27164d3abbb0e815b8322db9e9a3fb7022836ad19adef",
-    "eval.log": "31c7dbc1fb9e48df307a56a0e3de88ba8480119dfdcec614f4d8fa970d8dbc1d"
+    "test-public.log": "0e91b5a85f779d08b2331fafd5d9ffd1f0e1f05eecc2e2da24584b1a62d0368f",
+    "utility-reasoning.log": "c2f7e51db09b36700868d67ff9892a30fec92f808170d635b87226d07d112d17",
+    "isolated-recovery.log": "c39a1971c77fc802ef35b1491af393378bfde16b9b7691b9628e275759db6396",
+    "pre-auth-validation.log": "9a6d799a815579a1266b73a7173419f17e837886923ea69ac43361ce603514bf",
+    "verify.log": "3461cc933d360fe3161de47cccf3e5f1affb32c32f1e75e5b62a4e6619e7fd90",
+    "eval.log": "6d15e5a9168cca64a9dda882998304b6e904324ff1bf26890d1cbce2828e5125",
+    "lifecycle.log": "ec5fdd8321286d7d95e586e31df4d86f7e54fa75368bcfa55c7b5d5644161b61"
+  },
+  "previousAttempt": {
+    "checkedAt": "2026-10-04T05:36:12.938435+00:00",
+    "publicGate": "failed: expired Claude OAuth credential",
+    "resolution": "renewed through the canonical login wrapper; public Claude smoke and full public suite passed"
+  },
+  "gateRuns": {
+    "verify": {
+      "exitStatus": 0,
+      "startedAt": "2026-10-04T07:51:10.547475+00:00",
+      "endedAt": "2026-10-04T07:53:01.652159+00:00",
+      "durationSeconds": 111.104684
+    },
+    "test-public": {
+      "exitStatus": 0,
+      "startedAt": "2026-10-04T07:53:01.652505+00:00",
+      "endedAt": "2026-10-04T07:53:40.351908+00:00",
+      "durationSeconds": 38.699403
+    },
+    "eval": {
+      "exitStatus": 0,
+      "startedAt": "2026-10-04T07:53:40.352278+00:00",
+      "endedAt": "2026-10-04T07:57:14.034392+00:00",
+      "durationSeconds": 213.682114
+    }
+  },
+  "claudeOAuth": {
+    "renewed": true,
+    "freshUnexpiredStateValidated": true,
+    "stateMode": "0600",
+    "publicSmoke": "claude-ok",
+    "validationTest": "TEST-027"
   }
 }

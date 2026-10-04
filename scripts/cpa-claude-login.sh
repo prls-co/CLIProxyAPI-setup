@@ -14,6 +14,7 @@ require_nonempty_file state/cpa/config.yaml
 
 printf 'SSH login: keep a local port forward to this host open on port 54545\n'
 printf 'the login command will print the authorization URL; open it in your local browser\n'
+login_started_epoch="$(date +%s)"
 docker compose run --rm --no-deps --interactive --tty \
   -p 127.0.0.1:54545:54545 \
   cli-proxy-api ./CLIProxyAPI \
@@ -28,19 +29,32 @@ docker compose run --rm --no-deps \
   cli-proxy-api /usr/bin/bash -c \
   'find /root/.cli-proxy-api -type f -name "*.json" -exec chmod 600 {} + -exec chown "$OPERATOR_UID:$OPERATOR_GID" {} +'
 
-claude_auth_found=0
-while IFS= read -r auth_file; do
-  if jq -e \
-    '.type == "claude" and
-     (.access_token | type == "string" and length > 0) and
-     (.refresh_token | type == "string" and length > 0)' \
-    "$auth_file" >/dev/null 2>&1; then
-    claude_auth_found=1
-    break
-  fi
-done < <(find state/cpa/auths -maxdepth 1 -type f -name '*.json' | sort)
-[[ "$claude_auth_found" -eq 1 ]] || {
-  printf 'Claude login completed without producing usable OAuth state\n' >&2
+python3 - "$login_started_epoch" <<'PY' || {
+import datetime
+import json
+import pathlib
+import sys
+
+started = int(sys.argv[1])
+now = datetime.datetime.now(datetime.timezone.utc)
+for path in pathlib.Path('state/cpa/auths').glob('*.json'):
+    try:
+        auth = json.loads(path.read_text())
+        if auth.get('type') != 'claude' or auth.get('disabled', False):
+            continue
+        if not all(isinstance(auth.get(key), str) and auth[key].strip()
+                   for key in ('access_token', 'refresh_token')):
+            continue
+        expires = datetime.datetime.fromisoformat(auth['expired'].replace('Z', '+00:00'))
+        refreshed = datetime.datetime.fromisoformat(auth['last_refresh'].replace('Z', '+00:00'))
+        if (expires.tzinfo is not None and refreshed.tzinfo is not None
+                and expires > now and started <= refreshed.timestamp() <= now.timestamp()):
+            sys.exit(0)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        continue
+sys.exit(1)
+PY
+  printf 'Claude login did not produce fresh, unexpired OAuth state; complete browser authorization and retry\n' >&2
   exit 1
 }
 

@@ -1,0 +1,26 @@
+{
+  "test": "TEST-027",
+  "checkedAt": "2026-10-04T07:50:34.882731+00:00",
+  "status": "pass",
+  "tests": 3,
+  "acceptedFreshTimezones": [
+    "UTC",
+    "+08:00"
+  ],
+  "rejected": [
+    "callback timeout returning exit zero",
+    "unchanged credential",
+    "expired credential",
+    "disabled credential",
+    "missing state",
+    "malformed state",
+    "missing or blank tokens",
+    "wrong provider",
+    "missing refresh timestamp",
+    "invalid expiry",
+    "timezone-free timestamps",
+    "future refresh timestamp"
+  ],
+  "realCredentialsUsed": false,
+  "modelCallsMade": false
+}
