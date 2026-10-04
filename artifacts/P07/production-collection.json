@@ -1,0 +1,15 @@
+{
+  "test": "TEST-007",
+  "status": "pass",
+  "correlation_id": "test007-20261004T080037Z-648873",
+  "cpamp_request_id": "9410a56f",
+  "correlation_method": "serial event-count delta and timestamp window",
+  "model": "gpt-6-astra",
+  "failed": false,
+  "baseline_events": 39289,
+  "final_events": 39290,
+  "last_consumed_at": 1791100839732,
+  "last_inserted_at": 1791100839752,
+  "latency_ms": 1851,
+  "total_tokens": 32
+}

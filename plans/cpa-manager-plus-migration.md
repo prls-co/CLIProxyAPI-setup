@@ -9,11 +9,12 @@ and query-set [consumer migration #14](https://github.com/prls-co/query-set/issu
 are closed. Independent defects and their acceptance evidence remain separate
 from that completed migration.
 
-Issue [#2](https://github.com/prls-co/CLIProxyAPI-setup/issues/2) has an accepted
-resolution: `lowest` means the lowest effort supported by the
+Issue [#2](https://github.com/prls-co/CLIProxyAPI-setup/issues/2) is closed.
+Its accepted resolution is that `lowest` means the lowest effort supported by the
 selected model through CPA. Unsupported `none -> low` normalization is allowed.
 See the [reasoning policy, capability snapshot and regression gates](../docs/reasoning-effort.md).
-Close the tracker after all release gates and production acceptance pass.
+All release gates and production acceptance passed on 2026-10-04; the updated
+tests, documentation and sanitized evidence are published on main.
 
 ## Current ownership and decisions
 

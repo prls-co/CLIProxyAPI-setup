@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-10-04T07:58:14.065804+00:00",
-  "releaseStatus": "validated-before-publication",
+  "checkedAt": "2026-10-04T08:02:43.486900+00:00",
+  "releaseStatus": "released",
   "baseSetupCommit": "f447bf5cba7aa28f6a242284d166b338e37a4d47",
   "utilityLlmCommit": "3f04daf6aea2f6eabbdc6003fd55dbd14fd055e1",
   "policy": "lowest supported effort for the selected model through the selected route",
@@ -152,18 +152,24 @@
     }
   },
   "publication": {
-    "pushedToMain": false,
-    "releaseReconciled": false,
-    "issue2Closed": false
+    "implementationCommit": "d1e66e0da0114131c60594eb15061cb6bb89d431",
+    "pushedToMain": true,
+    "releaseReconciled": true,
+    "mainRemoteVerifiedCommit": "d1e66e0da0114131c60594eb15061cb6bb89d431",
+    "issue2Closed": true,
+    "issue2ClosedAt": "2026-10-04T08:01:40Z"
   },
   "privateLogSha256": {
+    "post-production-public.log": "e1803781b0256b2662927622c37b014d777a560acc711a4559fb0ae0c958cda4",
     "test-public.log": "0e91b5a85f779d08b2331fafd5d9ffd1f0e1f05eecc2e2da24584b1a62d0368f",
     "utility-reasoning.log": "c2f7e51db09b36700868d67ff9892a30fec92f808170d635b87226d07d112d17",
     "isolated-recovery.log": "c39a1971c77fc802ef35b1491af393378bfde16b9b7691b9628e275759db6396",
     "pre-auth-validation.log": "9a6d799a815579a1266b73a7173419f17e837886923ea69ac43361ce603514bf",
     "verify.log": "3461cc933d360fe3161de47cccf3e5f1affb32c32f1e75e5b62a4e6619e7fd90",
     "eval.log": "6d15e5a9168cca64a9dda882998304b6e904324ff1bf26890d1cbce2828e5125",
-    "lifecycle.log": "ec5fdd8321286d7d95e586e31df4d86f7e54fa75368bcfa55c7b5d5644161b61"
+    "lifecycle.log": "ec5fdd8321286d7d95e586e31df4d86f7e54fa75368bcfa55c7b5d5644161b61",
+    "production-reconciliation.log": "1da3f1cbef27d3f430cf40fe64239ccd893d7060cce0bde45ca43c0869c8a061",
+    "post-production-collection.log": "448f631a59f647b5244782d98d04aaf7ca703a967201ec5c3b13db35094362fe"
   },
   "previousAttempt": {
     "checkedAt": "2026-10-04T05:36:12.938435+00:00",
@@ -196,5 +202,68 @@
     "stateMode": "0600",
     "publicSmoke": "claude-ok",
     "validationTest": "TEST-027"
+  },
+  "production": {
+    "checkedAt": "2026-10-04T08:02:43.486900+00:00",
+    "publicEndpoint": "https://cpa.prls.co/v1",
+    "gates": {
+      "production-reconciliation": {
+        "exitStatus": 0,
+        "startedAt": "2026-10-04T07:59:50.736048+00:00",
+        "endedAt": "2026-10-04T07:59:57.105275+00:00",
+        "durationSeconds": 6.369227
+      },
+      "post-production-public": {
+        "exitStatus": 0,
+        "startedAt": "2026-10-04T07:59:57.105626+00:00",
+        "endedAt": "2026-10-04T08:00:37.808544+00:00",
+        "durationSeconds": 40.702918
+      },
+      "post-production-collection": {
+        "exitStatus": 0,
+        "startedAt": "2026-10-04T08:00:37.808859+00:00",
+        "endedAt": "2026-10-04T08:00:46.625571+00:00",
+        "durationSeconds": 8.816712
+      }
+    },
+    "runtime": {
+      "services": [
+        {
+          "service": "cli-proxy-api",
+          "state": "running",
+          "health": "healthy",
+          "image": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288"
+        },
+        {
+          "service": "cloudflared",
+          "state": "running",
+          "health": "",
+          "image": "cloudflare/cloudflared@sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9"
+        },
+        {
+          "service": "cpa-manager-plus",
+          "state": "running",
+          "health": "healthy",
+          "image": "seakee/cpa-manager-plus@sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351"
+        },
+        {
+          "service": "cpamp-public",
+          "state": "running",
+          "health": "healthy",
+          "image": "caddy@sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb"
+        }
+      ],
+      "imageMatchesPin": true,
+      "observedBinarySha256": "cfbb273fe3d7dcb1c9d5f3d3c3b29147ba8f306cdc531fe036df10066543e29e"
+    },
+    "publicReasoningCases": 8,
+    "claudeSmoke": "claude-ok",
+    "usageCollection": "pass"
+  },
+  "implementationCodeQL": {
+    "conclusion": "success",
+    "headSha": "d1e66e0da0114131c60594eb15061cb6bb89d431",
+    "status": "completed",
+    "url": "https://github.com/prls-co/CLIProxyAPI-setup/actions/runs/37187453604"
   }
 }
