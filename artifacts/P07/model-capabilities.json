@@ -1,0 +1,126 @@
+{
+  "checkedAt": "2026-10-04T05:31:26.059648+00:00",
+  "sourceRepository": "router-for-me/models",
+  "sourceCommit": "ff3a6ab4316d31204c90a891ddc1cbbee14d0358",
+  "sourceUrl": "https://raw.githubusercontent.com/router-for-me/models/ff3a6ab4316d31204c90a891ddc1cbbee14d0358/models.json",
+  "catalogGroup": "codex-pro",
+  "route": "CPA Codex OAuth",
+  "scope": "dated research evidence, not runtime configuration",
+  "models": {
+    "gpt-5.5": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": null,
+      "presentInActiveCpaCatalog": true
+    },
+    "gpt-6-astra": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": null,
+      "presentInActiveCpaCatalog": true
+    },
+    "gpt-6-sol": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": null,
+      "presentInActiveCpaCatalog": true
+    },
+    "gpt-6.1-sol": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": null,
+      "presentInActiveCpaCatalog": true
+    },
+    "gpt-6-luna": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": null,
+      "presentInActiveCpaCatalog": true
+    },
+    "gpt-5.6-sol": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": "low",
+      "presentInActiveCpaCatalog": true
+    },
+    "gpt-5.6-terra": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": null,
+      "presentInActiveCpaCatalog": true
+    },
+    "gpt-5.6-luna": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": "low",
+      "presentInActiveCpaCatalog": true
+    },
+    "codex-auto-review": {
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "noneSupportedByCatalog": false,
+      "lowestNativeEffort": "low",
+      "utilityLowestNativeEffort": null,
+      "presentInActiveCpaCatalog": true
+    }
+  }
+}

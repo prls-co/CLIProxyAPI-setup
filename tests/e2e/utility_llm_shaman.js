@@ -59,6 +59,36 @@ async function main() {
     throw new Error("CPA_API_KEY is unavailable in utility-llm runtime env");
   }
 
+  const lowestResults = [];
+  for (const lowestModelId of ["gpt-5.6-luna", "gpt-5.6-sol"]) {
+    const lowestModel = api.MODEL_CONFIG[lowestModelId];
+    if (lowestModel?.provider !== "cpa" || lowestModel.apiInferenceType !== "responses" ||
+        lowestModel.reasoningEffortMap?.lowest?.reasoning?.effort !== "low") {
+      throw new Error(`${lowestModelId} must map contracted lowest to CPA-supported low`);
+    }
+    const lowestResult = await api.utilityLLMCall({
+      modelId: lowestModelId,
+      callType: "contracted",
+      reasoningEffort: "lowest",
+      userPrompt: "Return the requested sentinel object.",
+      schema: {
+        type: "object", additionalProperties: false, required: ["sentinel"],
+        properties: { sentinel: { type: "string", enum: ["LOWEST_SUPPORTED_EFFORT"] } },
+      },
+      max_tokens: 256,
+      timeout: 19000,
+      overallTimeoutMs: 20000,
+      maxAttempts: 1,
+      cacheMode: "off",
+      loggingContext: { taskId: "utility-llm-shaman-lowest", taskSlug: "utility-llm-shaman-lowest" },
+    });
+    if (lowestResult?.sentinel !== "LOWEST_SUPPORTED_EFFORT" || Object.keys(lowestResult).length !== 1) {
+      throw new Error("contracted lowest call returned an unexpected structured result");
+    }
+    // utility-llm's existing mismatch guard checks returned effort against the mapped request.
+    lowestResults.push({ model: lowestModelId, reasoningEffort: "lowest", nativeEffort: "low", status: "pass" });
+  }
+
   const result = await api.utilityLLMCall({
     modelId,
     callType: "native",
@@ -67,7 +97,7 @@ async function main() {
     schema,
     tools: [{ type: "web_search", search_context_size: "low" }],
     tool_choice: "required",
-    reasoning: { effort: "low" },
+    ...model.reasoningEffortMap.lowest,
     max_tokens: 256,
     timeout: 19000,
     overallTimeoutMs: 20000,
@@ -80,9 +110,9 @@ async function main() {
   });
 
   if (!result || result.domain !== "openai.com" || result.search_used !== true || result.marker !== "utility-llm-shaman-web-schema") {
-    throw new Error(`unexpected structured result: ${JSON.stringify(result)}`);
+    throw new Error("native web-search call returned an unexpected structured result");
   }
-  console.log(JSON.stringify({
+  const summary = {
     ok: true,
     profile: "cpa",
     baseURL: expectedBaseUrl,
@@ -90,11 +120,17 @@ async function main() {
     api: "responses",
     structuredOutput: "strict-json-schema",
     webSearch: "required",
+    lowestResults,
     result,
-  }, null, 2));
+  };
+  const artifactDirectory = path.join(setupRoot, "artifacts/P07/TEST-015");
+  fs.mkdirSync(artifactDirectory, { recursive: true });
+  fs.writeFileSync(path.join(artifactDirectory, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
+  console.log(JSON.stringify(summary, null, 2));
 }
 
 main().catch((error) => {
-  console.error(error && error.message ? error.message : error);
+  // Provider errors can carry headers and request bodies; do not print them.
+  console.error(`TEST-015 failed: ${error.code || error.name || "Error"}`);
   process.exitCode = 1;
 });

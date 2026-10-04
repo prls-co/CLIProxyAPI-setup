@@ -1,0 +1,88 @@
+{
+  "test": "TEST-026",
+  "status": "pass",
+  "checkedAt": "2026-10-04T05:26:21.321Z",
+  "route": "public",
+  "results": [
+    {
+      "model": "gpt-5.6-luna",
+      "stream": true,
+      "requestedEffort": "low",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": true,
+      "durationMs": 1526
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "stream": false,
+      "requestedEffort": "low",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": true,
+      "durationMs": 1805
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "stream": true,
+      "requestedEffort": "none",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": true,
+      "durationMs": 2528
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "stream": false,
+      "requestedEffort": "none",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": true,
+      "durationMs": 1416
+    },
+    {
+      "model": "gpt-6-astra",
+      "stream": true,
+      "requestedEffort": "low",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": true,
+      "durationMs": 2738
+    },
+    {
+      "model": "gpt-6-astra",
+      "stream": false,
+      "requestedEffort": "low",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": true,
+      "durationMs": 2368
+    },
+    {
+      "model": "gpt-6-astra",
+      "stream": true,
+      "requestedEffort": "none",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": true,
+      "durationMs": 2020
+    },
+    {
+      "model": "gpt-6-astra",
+      "stream": false,
+      "requestedEffort": "none",
+      "effectiveEffort": "low",
+      "status": "completed",
+      "strictSchema": true,
+      "originVerified": true,
+      "durationMs": 2674
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "profile": "cpa",
+  "baseURL": "https://cpa.prls.co/v1",
+  "model": "gpt-5.6-luna",
+  "api": "responses",
+  "structuredOutput": "strict-json-schema",
+  "webSearch": "required",
+  "lowestResults": [
+    {
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "lowest",
+      "nativeEffort": "low",
+      "status": "pass"
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "reasoningEffort": "lowest",
+      "nativeEffort": "low",
+      "status": "pass"
+    }
+  ],
+  "result": {
+    "domain": "openai.com",
+    "search_used": true,
+    "marker": "utility-llm-shaman-web-schema"
+  }
+}

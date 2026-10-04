@@ -1,0 +1,37 @@
+{
+  "test": "TEST-016",
+  "results": [
+    {
+      "startedAt": "2026-10-04T05:31:26.216Z",
+      "httpStatus": 200,
+      "cpaRequestId": "24aa925f",
+      "headersMs": 746,
+      "firstEventMs": 748,
+      "lastEventMs": 2298,
+      "eventCount": 11,
+      "terminalEvent": "response.completed",
+      "responseStatus": "completed",
+      "requestedReasoningEffort": "max",
+      "effectiveReasoningEffort": "max",
+      "cancelledBy": null,
+      "totalTokens": 33,
+      "durationMs": 2302
+    },
+    {
+      "startedAt": "2026-10-04T05:31:28.518Z",
+      "httpStatus": 200,
+      "cpaRequestId": "d93068e5",
+      "headersMs": 795,
+      "firstEventMs": 795,
+      "lastEventMs": 795,
+      "eventCount": 1,
+      "terminalEvent": null,
+      "responseStatus": "in_progress",
+      "requestedReasoningEffort": "max",
+      "effectiveReasoningEffort": "max",
+      "cancelledBy": "test-client-after-response.created",
+      "totalTokens": null,
+      "durationMs": 798
+    }
+  ]
+}

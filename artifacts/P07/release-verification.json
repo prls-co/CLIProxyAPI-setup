@@ -1,0 +1,172 @@
+{
+  "checkedAt": "2026-10-04T05:36:12.938435+00:00",
+  "releaseStatus": "awaiting-claude-signin",
+  "baseSetupCommit": "f447bf5cba7aa28f6a242284d166b338e37a4d47",
+  "utilityLlmCommit": "3f04daf6aea2f6eabbdc6003fd55dbd14fd055e1",
+  "policy": "lowest supported effort for the selected model through the selected route",
+  "cpa": {
+    "version": "v7.3.8-prls.3",
+    "upstreamCommit": "c93978c4ea2e908255a2a06c37599fda3651554a",
+    "image": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288",
+    "observedBinarySha256": "cfbb273fe3d7dcb1c9d5f3d3c3b29147ba8f306cdc531fe036df10066543e29e"
+  },
+  "gates": {
+    "make verify": "pass",
+    "make test-public": "fail: Claude subscription HTTP 503",
+    "make eval": "pass",
+    "TEST-016 lifecycle": "pass",
+    "TEST-024 isolated image recovery": "pass",
+    "utility-llm reasoning-effort behavior": "pass",
+    "TEST-026 local and public": "pass",
+    "TEST-015 contracted lowest and native web search": "pass"
+  },
+  "reasoningRegressionCases": {
+    "local": 8,
+    "public": 8,
+    "models": [
+      "gpt-5.6-luna",
+      "gpt-6-astra"
+    ],
+    "requestedEfforts": [
+      "low",
+      "none"
+    ],
+    "expectedEffectiveEffort": "low",
+    "streamingAndNonstreaming": true
+  },
+  "reliability": {
+    "strict_schema_conformance_rate": 1.0,
+    "combined_search_schema_conformance_rate": 1.0,
+    "combined_search_call_rate": 1.0,
+    "max_request_seconds": 6.533,
+    "mean_request_seconds": 3.7143333333333333,
+    "strict_wilson_95_ci": [
+      0.7224672001371107,
+      0.9999999999999999
+    ],
+    "combined_wilson_95_ci": [
+      0.5655175352168251,
+      1.0
+    ],
+    "status": "pass"
+  },
+  "collection": {
+    "evaluation": "EVAL-004",
+    "status": "pass",
+    "sample_count": 5,
+    "collected_count": 5,
+    "usage_event_completeness": 1.0,
+    "insertion_lag_seconds": {
+      "mean": 0.0032,
+      "standard_deviation": 0.00116619037896906,
+      "p50": 0.003,
+      "p95": 0.005,
+      "bootstrap_mean_95_ci": [
+        0.0022,
+        0.0042
+      ]
+    },
+    "thresholds": {
+      "usage_event_completeness": 1.0,
+      "insertion_lag_p95_seconds": 10
+    },
+    "lag_definition": "max(0, CPAMP created_at_ms - (CPA request timestamp_ms + request latency_ms))",
+    "samples": [
+      {
+        "seed": 6101,
+        "correlation_id": "eval004-6101-20261004T053024Z",
+        "cpamp_request_id": "97c681fd",
+        "correlation_method": "serial event-count delta and timestamp window",
+        "timestamp_ms": 1791091824487,
+        "request_latency_ms": 3739,
+        "created_at_ms": 1791091828229,
+        "collection_lag_ms": 3
+      },
+      {
+        "seed": 6102,
+        "correlation_id": "eval004-6102-20261004T053033Z",
+        "cpamp_request_id": "a8175e5f",
+        "correlation_method": "serial event-count delta and timestamp window",
+        "timestamp_ms": 1791091833308,
+        "request_latency_ms": 3371,
+        "created_at_ms": 1791091836681,
+        "collection_lag_ms": 2
+      },
+      {
+        "seed": 6103,
+        "correlation_id": "eval004-6103-20261004T053042Z",
+        "cpamp_request_id": "6b44b658",
+        "correlation_method": "serial event-count delta and timestamp window",
+        "timestamp_ms": 1791091842277,
+        "request_latency_ms": 1359,
+        "created_at_ms": 1791091843638,
+        "collection_lag_ms": 2
+      },
+      {
+        "seed": 6104,
+        "correlation_id": "eval004-6104-20261004T053049Z",
+        "cpamp_request_id": "31ee95fb",
+        "correlation_method": "serial event-count delta and timestamp window",
+        "timestamp_ms": 1791091849161,
+        "request_latency_ms": 1798,
+        "created_at_ms": 1791091850964,
+        "collection_lag_ms": 5
+      },
+      {
+        "seed": 6105,
+        "correlation_id": "eval004-6105-20261004T053056Z",
+        "cpamp_request_id": "1f8b91b1",
+        "correlation_method": "serial event-count delta and timestamp window",
+        "timestamp_ms": 1791091856046,
+        "request_latency_ms": 1839,
+        "created_at_ms": 1791091857889,
+        "collection_lag_ms": 4
+      }
+    ]
+  },
+  "recovery": {
+    "evaluation": "EVAL-006",
+    "status": "pass",
+    "artifact_completeness": 1.0,
+    "required_artifact_count": 12,
+    "present_artifact_count": 12,
+    "restore_hash_match_rate": 1.0,
+    "restore_mode_match_rate": 1.0,
+    "restore_ownership_match_rate": 1.0,
+    "private_recovery_seconds": 16.108,
+    "private_recovery_standard_deviation": 0,
+    "private_recovery_95_ci": [
+      16.108,
+      16.108
+    ],
+    "final_local_contract": 1,
+    "final_public_contract": 1,
+    "gateway": "cpa",
+    "backup_archive": "cpa-state-20261004T053103Z-3890729.tar.gz",
+    "thresholds": {
+      "artifact_completeness": 1.0,
+      "restore_hash_match_rate": 1.0,
+      "private_recovery_seconds": 180,
+      "final_public_contract": 1
+    }
+  },
+  "remainingGate": {
+    "provider": "Claude OAuth",
+    "publicSmokeHttpStatus": 503,
+    "localControlHttpStatus": 503,
+    "existingCpaRefreshEndpointHttpStatus": 500,
+    "upstreamRefreshHttpStatus": 400,
+    "upstreamRefreshError": "invalid_grant: refresh token expired",
+    "requiredAction": "renew with scripts/cpa-claude-login.sh, then rerun full gates before push and production reconciliation"
+  },
+  "publication": {
+    "pushedToMain": false,
+    "releaseReconciled": false,
+    "issue2Closed": false
+  },
+  "privateLogSha256": {
+    "verify.log": "043b50e9e7889c77198364c19841f5368c419041dfb0d17ee18aa2c63e1d9ce8",
+    "public.log": "9f37c751a2173504ccd27164d3abbb0e815b8322db9e9a3fb7022836ad19adef",
+    "eval.log": "31c7dbc1fb9e48df307a56a0e3de88ba8480119dfdcec614f4d8fa970d8dbc1d"
+  }
+}

@@ -63,6 +63,8 @@ run_response() {
   [[ -n "$completed" ]] || { printf 'missing public completed event: %s\n' "$name" >&2; return 1; }
   sse_sanitize_event <<<"$completed" >"$ARTIFACT_DIR/$name.json"
   jq -e '.response.status == "completed" and .response.error == null' <<<"$completed" >/dev/null
+  jq -e --arg effort "$(jq -r '.reasoning.effort' "$tmp/$name.request.json")" \
+    '.response.reasoning.effort == $effort' <<<"$completed" >/dev/null
   if [[ "$name" == basic ]]; then
     grep -q 'CPA_AUTH_READY' <<<"$output_text"
   else
@@ -76,6 +78,7 @@ run_response() {
     "$name" "$http_status" "$first_byte_seconds" "$total_seconds" "$CORRELATION_ID-$name"
 }
 
+jq -e '.response.reasoning.effort == "low"' <<<"$OPENAI_PROBE_COMPLETED" >/dev/null
 sse_sanitize_event <<<"$OPENAI_PROBE_COMPLETED" >"$ARTIFACT_DIR/basic.json"
 run_response strict-schema
 run_response strict-schema-nonstreaming

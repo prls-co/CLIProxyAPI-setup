@@ -12,6 +12,10 @@ pay-per-token OpenAI or Anthropic provider is configured.
 CPA Manager Plus is available at `https://cpa.prls.co/management.html` using
 its native admin-key login. All raw service ports remain loopback-only.
 
+For the application reasoning flag, `lowest` selects the least effort supported
+by the selected model and provider route. CPA Luna and Sol currently map it to
+`low`. See the [per-model reasoning policy and acceptance tests](docs/reasoning-effort.md).
+
 This repository owns one public API origin: CPA. Consumer migrations are owned
 by their repositories and coordinated through GitHub issues, including
 [utility-llm issue #15](https://github.com/prls-co/utility-llm/issues/15).

@@ -1,0 +1,35 @@
+{
+  "source": "actual provider_stream diagnostics from TEST-015",
+  "results": [
+    {
+      "modelId": "gpt-5.6-luna",
+      "requestedReasoningEffort": "low",
+      "effectiveReasoningEffort": "low",
+      "terminalEvent": "response.completed",
+      "responseStatus": "completed",
+      "durationMs": 2908,
+      "aborted": false,
+      "errorCode": null
+    },
+    {
+      "modelId": "gpt-5.6-sol",
+      "requestedReasoningEffort": "low",
+      "effectiveReasoningEffort": "low",
+      "terminalEvent": "response.completed",
+      "responseStatus": "completed",
+      "durationMs": 1512,
+      "aborted": false,
+      "errorCode": null
+    },
+    {
+      "modelId": "gpt-5.6-luna",
+      "requestedReasoningEffort": "low",
+      "effectiveReasoningEffort": "low",
+      "terminalEvent": "response.completed",
+      "responseStatus": "completed",
+      "durationMs": 7528,
+      "aborted": false,
+      "errorCode": null
+    }
+  ]
+}

@@ -65,6 +65,9 @@ run_case() {
   fi
   [[ -n "$completed" ]] || { printf 'missing completed event: %s\n' "$name" >&2; return 1; }
   jq -e '.response.status == "completed" and .response.error == null' <<<"$completed" >/dev/null
+  local requested_effort
+  requested_effort="$(jq -r '.reasoning.effort' "$tmp/$name.request.json")"
+  jq -e --arg effort "$requested_effort" '.response.reasoning.effort == $effort' <<<"$completed" >/dev/null
   sse_sanitize_event <<<"$completed" >"$ARTIFACT_DIR/$name.json"
 
   case "$name" in
@@ -105,12 +108,13 @@ run_case() {
     --arg case "$name" \
     --arg call_id "$call_id" \
     --arg model "$response_model" \
+    --arg reasoning_effort "$requested_effort" \
     --arg cpa_version "$CPA_VERSION" \
     --arg cpa_image "$cpa_image" \
     --argjson http_status "$http_status" \
     --argjson first_byte_seconds "$first_byte_seconds" \
     --argjson total_seconds "$total_seconds" \
-    '{case:$case,call_id:$call_id,http_status:$http_status,model:$model,cpa_version:$cpa_version,cpa_image:$cpa_image,first_byte_seconds:$first_byte_seconds,total_seconds:$total_seconds}' \
+    '{case:$case,call_id:$call_id,http_status:$http_status,model:$model,requested_reasoning_effort:$reasoning_effort,effective_reasoning_effort:$reasoning_effort,cpa_version:$cpa_version,cpa_image:$cpa_image,first_byte_seconds:$first_byte_seconds,total_seconds:$total_seconds}' \
     >>"$metadata_path"
   sha256sum "$tmp/$name.request.json" | awk -v name="$name" '{print name, $1}' >>"$request_hashes_path"
   printf 'case %s: ok http=%s first_byte=%ss total=%ss model=%s cpa=%s call_id=%s\n' \

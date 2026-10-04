@@ -1,0 +1,21 @@
+{
+  "test": "TEST-024",
+  "image": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288",
+  "startedAt": "2026-10-04T05:27:05.563Z",
+  "status": "pass",
+  "upstreamCalls": 2,
+  "responses": [
+    {
+      "status": 503,
+      "retryAfter": null
+    },
+    {
+      "status": 503,
+      "retryAfter": "3"
+    },
+    {
+      "status": 200,
+      "retryAfter": null
+    }
+  ]
+}

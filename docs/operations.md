@@ -181,6 +181,14 @@ documented public operator smoke model, with low reasoning. The separate
 utility-llm consumer probe currently remains on `gpt-5.6-luna`. Claude smoke
 uses `claude-sonnet-5`.
 
+The consumer probe also checks contracted `lowest` on CPA Luna and Sol. The
+setup regression checks accepted `none -> low` normalization locally and
+publicly. See [reasoning-effort policy](reasoning-effort.md) before adding a
+model or changing its mapping. Run `make verify`, `make test-public`, `make
+eval`, and the opt-in lifecycle diagnostic before pushing a release. Reconcile
+with `bash scripts/restart-private.sh`, then repeat public acceptance. A policy
+or test-only release uses the existing immutable image pin.
+
 ## Backup and restore
 
 Create and verify a consistent protected local backup. CPA stays online while

@@ -7,6 +7,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 # shellcheck source=scripts/lib/common.sh
 source scripts/lib/common.sh
+source scripts/lib/sse.sh
 load_env
 
 : "${CPA_LOCAL_BASE_URL:=http://127.0.0.1:8317}"
@@ -84,6 +85,8 @@ for effort in low medium high xhigh max; do
     "$CPA_LOCAL_BASE_URL/v1/responses" >"$stream"
   grep -q 'response.completed' "$stream"
   grep -q 'CPA_AUTH_READY' "$stream"
+  sse_completed_event "$stream" | jq -e --arg effort "$effort" \
+    '.response.status == "completed" and .response.reasoning.effort == $effort' >/dev/null
 done
 
 printf 'CPA auth and model readiness: ok\n'

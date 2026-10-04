@@ -17,6 +17,7 @@ test-unit:
 	@node --test tests/unit/responses_stream_lifecycle.cjs
 	@node --test tests/unit/patched_image_contract.cjs
 	@node --test tests/unit/smoke_model_contract.cjs
+	@node --test tests/unit/reasoning_effort.cjs
 
 test-security:
 	@bash tests/security/secret_hygiene.sh
@@ -29,6 +30,7 @@ test-local:
 
 test-contract:
 	@bash tests/contract/responses_contract.sh
+	@node tests/contract/reasoning_effort.cjs
 
 test-observability:
 	@bash tests/integration/cpamp_collection.sh
@@ -37,6 +39,7 @@ test-public:
 	@bash tests/e2e/public_contract.sh
 	@bash tests/e2e/public_dashboard.sh
 	@node tests/e2e/utility_llm_shaman.js
+	@node tests/contract/reasoning_effort.cjs --public
 	@fish scripts/smoke-claude.fish
 
 eval:
