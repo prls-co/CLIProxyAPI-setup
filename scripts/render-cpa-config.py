@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import re
 from pathlib import Path
 import sys
 
@@ -17,12 +18,22 @@ def read_secret(values: dict[str, str], name: str) -> str:
     return require_env_value(values, name)
 
 
+def retry_setting(values: dict[str, str], name: str, default: int, maximum: int) -> str:
+    value = values.get(name, "").strip() or str(default)
+    if re.fullmatch(r"[0-9]+", value) is None or not 0 <= int(value) <= maximum:
+        raise ValueError(f"{name} must be an integer between 0 and {maximum}")
+    return str(int(value))
+
+
 def main() -> None:
     values = load_env(ROOT / ".env")
     text = TEMPLATE.read_text(encoding="utf-8")
     replacements = {
         "__CPA_MANAGEMENT_KEY_JSON__": json.dumps(read_secret(values, "CPA_MANAGEMENT_KEY")),
         "__CPA_API_KEY_JSON__": json.dumps(read_secret(values, "CPA_API_KEY")),
+        "__CPA_REQUEST_RETRY__": retry_setting(values, "CPA_REQUEST_RETRY", 3, 10),
+        "__CPA_MAX_RETRY_CREDENTIALS__": retry_setting(values, "CPA_MAX_RETRY_CREDENTIALS", 1, 1000),
+        "__CPA_MAX_RETRY_INTERVAL_SECONDS__": retry_setting(values, "CPA_MAX_RETRY_INTERVAL_SECONDS", 30, 3600),
     }
     for marker, value in replacements.items():
         if marker not in text:

@@ -1,5 +1,11 @@
 # Tests
 
+`TEST-028` in `make test-unit` renders retry controls using an isolated synthetic
+environment, retaining defaults and rejecting invalid values before publication.
+`TEST-024` optionally qualifies the pinned CPA image against a synthetic upstream
+with retry policy `0` or `3`; it never mounts real account state. See
+[Temporal retry policy](../docs/temporal-retry-policy.md).
+
 Test files contain a `TEST-###` tag and evaluation files contain an
 `EVAL-###` tag. Tests write sanitized evidence under `artifacts/Pxx/` and do
 not print credential values. Fish is a test dependency because the static

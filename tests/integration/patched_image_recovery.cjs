@@ -11,12 +11,14 @@ const { execFileSync } = require("node:child_process");
 const { setTimeout: wait } = require("node:timers/promises");
 
 async function main() {
-  const [image, out] = process.argv.slice(2);
+  const [image, out, retry = "0"] = process.argv.slice(2);
   assert.match(image || "", /@sha256:[a-f0-9]{64}$/);
+  assert.ok(retry === "0" || retry === "3", "bounded retry qualification: 0 or 3");
+  const requestRetry = Number(retry);
   assert.ok(out && !fs.existsSync(out), "fresh output path required");
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cpa-recovery-fixture-"));
   const name = `cpa-recovery-fixture-${randomUUID()}`;
-  const results = { test: "TEST-024", image, startedAt: new Date().toISOString(), upstreamCalls: 0, responses: [] };
+  const results = { test: "TEST-024", image, requestRetry, syntheticUpstream: true, startedAt: new Date().toISOString(), upstreamCalls: 0, responses: [] };
   const upstream = http.createServer((req, res) => {
     req.resume();
     results.upstreamCalls += 1;
@@ -44,8 +46,9 @@ remote-management:
   disable-control-panel: true
 logging-to-file: false
 passthrough-headers: false
-request-retry: 0
-max-retry-interval: 0
+request-retry: ${requestRetry}
+max-retry-credentials: 1
+max-retry-interval: ${requestRetry === 0 ? 0 : 5}
 transient-error-cooldown-seconds: 3
 openai-compatibility:
   - name: "recovery-probe"
@@ -67,24 +70,31 @@ openai-compatibility:
     }
     assert.ok(healthy, "isolated image must start");
     const request = async () => {
+      const started = performance.now();
       const response = await fetch(`${base}/v1/chat/completions`, {
         method: "POST", signal: AbortSignal.timeout(10000),
         headers: { Authorization: "Bearer synthetic-client", "Content-Type": "application/json" },
         body: JSON.stringify({ model: "recovery-probe", messages: [{ role: "user", content: "synthetic" }] }),
       });
-      const record = { status: response.status, retryAfter: response.headers.get("retry-after"), body: await response.json() };
+      const record = { status: response.status, retryAfter: response.headers.get("retry-after"), body: await response.json(), durationMs: Math.round(performance.now() - started) };
       results.responses.push(record);
       assert.equal(response.headers.get("x-synthetic-private"), null);
       return record;
     };
-    assert.equal((await request()).status, 503);
-    const blocked = await request();
-    assert.equal(blocked.status, 503);
-    assert.match(blocked.body.error.message, /auth_unavailable/);
-    assert.ok(Number(blocked.retryAfter) > 0 && Number(blocked.retryAfter) <= 3, "temporary recovery must retain Retry-After with passthrough disabled");
-    assert.equal(results.upstreamCalls, 1, "blocked selection must not call upstream");
-    await wait(Number(blocked.retryAfter) * 1000 + 50);
-    const recovered = await request();
+    let recovered;
+    if (requestRetry === 0) {
+      assert.equal((await request()).status, 503);
+      const blocked = await request();
+      assert.equal(blocked.status, 503);
+      assert.match(blocked.body.error.message, /auth_unavailable/);
+      assert.ok(Number(blocked.retryAfter) > 0 && Number(blocked.retryAfter) <= 3, "temporary recovery must retain Retry-After with passthrough disabled");
+      assert.equal(results.upstreamCalls, 1, "blocked selection must not call upstream");
+      await wait(Number(blocked.retryAfter) * 1000 + 50);
+      recovered = await request();
+    } else {
+      recovered = await request();
+      assert.equal(results.responses.length, 1, "one client request must contain the retry");
+    }
     assert.equal(recovered.status, 200);
     assert.equal(recovered.body.choices[0].message.content, "RECOVERED");
     assert.equal(results.upstreamCalls, 2);

@@ -24,9 +24,9 @@ error-logs-max-files: 10
 usage-statistics-enabled: true
 redis-usage-queue-retention-seconds: 3600
 passthrough-headers: false
-request-retry: 3
-max-retry-credentials: 1
-max-retry-interval: 30
+request-retry: __CPA_REQUEST_RETRY__
+max-retry-credentials: __CPA_MAX_RETRY_CREDENTIALS__
+max-retry-interval: __CPA_MAX_RETRY_INTERVAL_SECONDS__
 disable-image-generation: "passthrough"
 ws-auth: true
 
