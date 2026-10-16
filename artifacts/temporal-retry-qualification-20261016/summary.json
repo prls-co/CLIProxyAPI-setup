@@ -1,0 +1,48 @@
+{
+  "cases": [
+    {
+      "test": "TEST-024",
+      "image": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288",
+      "requestRetry": 0,
+      "syntheticUpstream": true,
+      "startedAt": "2026-10-16T17:14:13.341Z",
+      "status": "pass",
+      "upstreamCalls": 2,
+      "responses": [
+        {
+          "status": 503,
+          "retryAfter": null,
+          "durationMs": 42
+        },
+        {
+          "status": 503,
+          "retryAfter": "3",
+          "durationMs": 7
+        },
+        {
+          "status": 200,
+          "retryAfter": null,
+          "durationMs": 7
+        }
+      ]
+    },
+    {
+      "test": "TEST-024",
+      "image": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288",
+      "requestRetry": 3,
+      "syntheticUpstream": true,
+      "startedAt": "2026-10-16T17:14:19.112Z",
+      "status": "pass",
+      "upstreamCalls": 2,
+      "responses": [
+        {
+          "status": 200,
+          "retryAfter": null,
+          "durationMs": 3474
+        }
+      ]
+    }
+  ],
+  "sharedConfigurationChanged": false,
+  "liveAccountCalls": 0
+}

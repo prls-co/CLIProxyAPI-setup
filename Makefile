@@ -13,6 +13,7 @@ test-static:
 	@bash tests/static/switch_current_machine_contract.sh
 
 test-unit:
+	@python3 tests/unit/retry_config.py
 	@bash tests/unit/public_edge_config.sh
 	@node --test tests/unit/responses_stream_lifecycle.cjs
 	@node --test tests/unit/patched_image_contract.cjs
