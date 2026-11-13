@@ -84,7 +84,8 @@ run_case() {
       jq -e 'type == "object" and keys == ["sentinel"] and .sentinel == "STRUCTURED_OUTPUT_ENFORCED"' <<<"$output_text" >/dev/null
       ;;
     translation-filtering)
-      jq -e '.response.text.format.type == "json_schema" and .response.text.format.name == "cpa_translation_probe" and .response.text.format.strict == true and .response.max_output_tokens == null' <<<"$completed" >/dev/null
+      # v8 preserves the supported output limit; the unsupported user field is removed.
+      jq -e '.response.text.format.type == "json_schema" and .response.text.format.name == "cpa_translation_probe" and .response.text.format.strict == true and .response.max_output_tokens == 128 and .response.user == null' <<<"$completed" >/dev/null
       grep -q '"type":"response.output_text.done"' "$tmp/$name.raw"
       jq -e 'type == "object" and keys == ["sentinel"] and .sentinel == "TEXT_PRESERVED_UNSUPPORTED_FIELD_REMOVED"' <<<"$output_text" >/dev/null
       ;;
