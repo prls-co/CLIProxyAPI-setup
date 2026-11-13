@@ -4,13 +4,21 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { inspectStream } = require("../contract/responses_stream_lifecycle.cjs");
 
-function response(events) {
+function response(events, traceId = "20260914000000-private-auth-index-a1b2c3d4") {
   const text = events.map((event) => `data: ${JSON.stringify(event)}\n\n`).join("");
   return new Response(new ReadableStream({ start(controller) {
     for (const character of text) controller.enqueue(new TextEncoder().encode(character));
     controller.close();
-  } }), { headers: { "x-cpa-trace-id": "20260914000000-private-auth-index-a1b2c3d4" } });
+  } }), { headers: { "x-cpa-trace-id": traceId } });
 }
+
+test("TEST-016 v8 UUID request IDs retain the local log suffix without credential identity", async () => {
+  const event = { type: "response.completed", response: { status: "completed", reasoning: { effort: "max" } } };
+  const trace = "20261113000000-private-auth-index-019a7cda-6f42-70c1-9a6e-1234a1b2c3d4";
+  const result = await inspectStream(response([event], trace), { startedAt: Date.now(), controller: new AbortController() });
+  assert.equal(result.cpaRequestId, "a1b2c3d4");
+  assert.doesNotMatch(JSON.stringify(result), /private|019a7cda/);
+});
 
 test("TEST-016 terminal status and reasoning come from metadata, without content or auth index", async () => {
   const completed = { type: "response.completed", response: {

@@ -7,10 +7,11 @@ const { parseEnv } = require("node:util");
 
 async function inspectStream(response, { startedAt, controller, cancelAfterCreated = false }) {
   const traceId = response.headers.get("x-cpa-trace-id") || "";
+  const requestId = traceId.match(/-([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}|[a-f0-9]{8})$/i)?.[1];
   const summary = {
     startedAt: new Date(startedAt).toISOString(), httpStatus: response.status,
     // The full trace header includes an auth index. Keep only CPA's request ID.
-    cpaRequestId: traceId.match(/-([a-f0-9]{8})$/i)?.[1] || null,
+    cpaRequestId: requestId?.slice(-8) || null,
     headersMs: Date.now() - startedAt, firstEventMs: null, lastEventMs: null,
     eventCount: 0, terminalEvent: null, responseStatus: null,
     requestedReasoningEffort: "max", effectiveReasoningEffort: null,
