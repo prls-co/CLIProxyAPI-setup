@@ -9,6 +9,8 @@ COPY source/ ./
 # suite are recorded in docs/recovery-deadlines.md, not silently skipped there.
 RUN go test ./sdk/cliproxy/auth ./sdk/api/handlers ./sdk/api/handlers/openai
 RUN go test ./internal/config ./internal/translator/codex/openai/responses
+RUN go test ./internal/auth/codex
+RUN go test -tags cpa_ownership -run '^TestWriteJSONFileAtomicPreservesOwnership$' ./internal/auth/codex
 RUN go test -run 'TestCodexStreamCancellation|TestCodexExecutorExecuteStream' ./internal/runtime/executor
 RUN go test -count=3 -run '^TestGetPluginSyncCancellationInterruptsRead$' ./internal/home
 ARG VERSION
