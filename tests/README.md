@@ -1,5 +1,12 @@
 # Tests
 
+The maintained v8 image runs the Linux `cpa_ownership` qualification in its root
+builder: an atomic Codex credential replacement must retain an existing
+operator UID/GID and mode `0600`, replace the synthetic token, and remove its
+temporary file. It uses no real credential or provider request. The same case
+failed against the first v8 image and passed after the ownership correction;
+the image build must execute it, rather than skip it on a non-root host.
+
 Test files contain a `TEST-###` tag and evaluation files contain an
 `EVAL-###` tag. Tests write sanitized evidence under `artifacts/Pxx/` and do
 not print credential values. Fish is a test dependency because the static
