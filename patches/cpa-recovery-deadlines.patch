@@ -1,45 +1,112 @@
-diff --git a/internal/runtime/executor/codex_executor_stream.go b/internal/runtime/executor/codex_executor_stream.go
-index 87e4d28..5d00126 100644
---- a/internal/runtime/executor/codex_executor_stream.go
-+++ b/internal/runtime/executor/codex_executor_stream.go
-@@ -350,6 +350,18 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
- 
- 	go func() {
- 		defer close(out)
-+		terminalSeen := false
-+		defer func() {
-+			if !terminalSeen && ctx.Err() != nil {
-+				// Cancellation is lifecycle evidence, not usage or credential failure.
-+				helpers := helps.LogWithRequestID(ctx).WithFields(log.Fields{
-+					"event":                "codex.stream.cancelled",
-+					"outcome":              "cancelled",
-+					"provider_usage_known": false,
-+				})
-+				helpers.Info("Codex response stream cancelled by caller: event=codex.stream.cancelled outcome=cancelled provider_usage_known=false")
-+			}
-+		}()
- 		defer func() {
- 			if errClose := httpResp.Body.Close(); errClose != nil {
- 				log.Errorf("codex executor: close response body error: %v", errClose)
-@@ -370,6 +382,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
- 				translatedLine = append([]byte("data: "), data...)
- 				eventType := gjson.GetBytes(data, "type").String()
- 				if streamErr, terminalBody, ok := codexTerminalFailureErrWithCooling(data, e.modelLevelCooling()); ok {
-+					terminalSeen = true
- 					if errClearReplay := clearCodexReasoningReplayOnInvalidSignature(ctx, replayScope, streamErr.StatusCode(), terminalBody); errClearReplay != nil {
- 						helps.RecordAPIResponseError(ctx, e.cfg, errClearReplay)
- 						reporter.PublishFailure(ctx, errClearReplay)
-@@ -404,6 +417,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Auth
- 				case "response.output_item.done":
- 					collectCodexOutputItemDone(data, outputItemsByIndex, &outputItemsFallback)
- 				case "response.completed", "response.incomplete", "response.done":
-+					terminalSeen = true
- 					terminalSuccess = true
- 					data = normalizeCodexWebsocketCompletion(data)
- 					if detail, ok := helps.ParseCodexUsage(data); ok {
+diff --git a/internal/auth/codex/token.go b/internal/auth/codex/token.go
+index 6baffb9..a6ecc61 100644
+--- a/internal/auth/codex/token.go
++++ b/internal/auth/codex/token.go
+@@ -87,6 +87,10 @@ func WriteJSONFileAtomic(authFilePath string, data map[string]any) error {
+ 		_ = tmpFile.Close()
+ 		return fmt.Errorf("failed to write token to temp file: %w", errWrite)
+ 	}
++	if errOwner := preserveCredentialFileOwner(authFilePath, tmpFile); errOwner != nil {
++		_ = tmpFile.Close()
++		return fmt.Errorf("failed to preserve credential file ownership: %w", errOwner)
++	}
+ 	if errClose := tmpFile.Close(); errClose != nil {
+ 		log.Errorf("codex token storage: close temp token file error: %v", errClose)
+ 		return fmt.Errorf("failed to close temp credential file: %w", errClose)
+diff --git a/internal/auth/codex/token_owner_linux.go b/internal/auth/codex/token_owner_linux.go
+new file mode 100644
+index 0000000..6cc5f2c
+--- /dev/null
++++ b/internal/auth/codex/token_owner_linux.go
+@@ -0,0 +1,18 @@
++package codex
++
++import (
++	"os"
++	"syscall"
++)
++
++// Preserve the operator's ownership when a root container replaces credentials.
++func preserveCredentialFileOwner(path string, replacement *os.File) error {
++	var info syscall.Stat_t
++	if err := syscall.Stat(path, &info); err != nil {
++		if os.IsNotExist(err) {
++			return nil
++		}
++		return err
++	}
++	return replacement.Chown(int(info.Uid), int(info.Gid))
++}
+diff --git a/internal/auth/codex/token_owner_linux_test.go b/internal/auth/codex/token_owner_linux_test.go
+new file mode 100644
+index 0000000..5df1db4
+--- /dev/null
++++ b/internal/auth/codex/token_owner_linux_test.go
+@@ -0,0 +1,48 @@
++//go:build linux && cpa_ownership
++
++package codex
++
++import (
++	"encoding/json"
++	"os"
++	"path/filepath"
++	"syscall"
++	"testing"
++)
++
++// This kernel boundary runs as root in the maintained image's build gate.
++func TestWriteJSONFileAtomicPreservesOwnership(t *testing.T) {
++	if os.Geteuid() != 0 {
++		t.Fatal("ownership qualification requires a root container with CAP_CHOWN")
++	}
++	path := filepath.Join(t.TempDir(), "synthetic.json")
++	if err := os.WriteFile(path, []byte(`{"access_token":"synthetic-old"}`), 0o600); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.Chown(path, 1000, 1000); err != nil {
++		t.Fatal(err)
++	}
++	if err := WriteJSONFileAtomic(path, map[string]any{"access_token": "synthetic-new"}); err != nil {
++		t.Fatal(err)
++	}
++	info, err := os.Stat(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	owner := info.Sys().(*syscall.Stat_t)
++	if owner.Uid != 1000 || owner.Gid != 1000 || info.Mode().Perm() != 0o600 {
++		t.Fatalf("replacement owner/mode = %d:%d %o, want 1000:1000 600", owner.Uid, owner.Gid, info.Mode().Perm())
++	}
++	raw, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var value map[string]any
++	if err := json.Unmarshal(raw, &value); err != nil || value["access_token"] != "synthetic-new" {
++		t.Fatal("replacement did not retain the new token data")
++	}
++	files, err := filepath.Glob(path + ".tmp.*")
++	if err != nil || len(files) != 0 {
++		t.Fatal("temporary credential file remains")
++	}
++}
+diff --git a/internal/auth/codex/token_owner_other.go b/internal/auth/codex/token_owner_other.go
+new file mode 100644
+index 0000000..4edc8c8
+--- /dev/null
++++ b/internal/auth/codex/token_owner_other.go
+@@ -0,0 +1,7 @@
++//go:build !linux
++
++package codex
++
++import "os"
++
++func preserveCredentialFileOwner(_ string, _ *os.File) error { return nil }
 diff --git a/internal/runtime/executor/codex_executor_cancel_test.go b/internal/runtime/executor/codex_executor_cancel_test.go
 new file mode 100644
-index 0000000..4b76a7b
+index 0000000..9f5d66a
 --- /dev/null
 +++ b/internal/runtime/executor/codex_executor_cancel_test.go
 @@ -0,0 +1,73 @@
@@ -52,11 +119,11 @@ index 0000000..4b76a7b
 +	"strings"
 +	"testing"
 +
-+	"github.com/router-for-me/CLIProxyAPI/v7/internal/config"
-+	"github.com/router-for-me/CLIProxyAPI/v7/internal/logging"
-+	cliproxyauth "github.com/router-for-me/CLIProxyAPI/v7/sdk/cliproxy/auth"
-+	cliproxyexecutor "github.com/router-for-me/CLIProxyAPI/v7/sdk/cliproxy/executor"
-+	sdktranslator "github.com/router-for-me/CLIProxyAPI/v7/sdk/translator"
++	"github.com/router-for-me/CLIProxyAPI/v8/internal/config"
++	"github.com/router-for-me/CLIProxyAPI/v8/internal/logging"
++	cliproxyauth "github.com/router-for-me/CLIProxyAPI/v8/sdk/cliproxy/auth"
++	cliproxyexecutor "github.com/router-for-me/CLIProxyAPI/v8/sdk/cliproxy/executor"
++	sdktranslator "github.com/router-for-me/CLIProxyAPI/v8/sdk/translator"
 +	log "github.com/sirupsen/logrus"
 +	logtest "github.com/sirupsen/logrus/hooks/test"
 +)
@@ -116,3 +183,50 @@ index 0000000..4b76a7b
 +		t.Fatalf("cancellation events = %d, want 1", count)
 +	}
 +}
+diff --git a/internal/runtime/executor/codex_executor_stream.go b/internal/runtime/executor/codex_executor_stream.go
+index 3223e02..5a0cc5c 100644
+--- a/internal/runtime/executor/codex_executor_stream.go
++++ b/internal/runtime/executor/codex_executor_stream.go
+@@ -454,6 +454,18 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+ 	}
+ 	go func() {
+ 		defer close(out)
++		terminalSeen := false
++		defer func() {
++			if !terminalSeen && ctx.Err() != nil {
++				// Cancellation is lifecycle evidence, not usage or credential failure.
++				helpers := helps.LogWithRequestID(ctx).WithFields(log.Fields{
++					"event":                "codex.stream.cancelled",
++					"outcome":              "cancelled",
++					"provider_usage_known": false,
++				})
++				helpers.Info("Codex response stream cancelled by caller: event=codex.stream.cancelled outcome=cancelled provider_usage_known=false")
++			}
++		}()
+ 		defer func() {
+ 			if errClose := httpResp.Body.Close(); errClose != nil {
+ 				log.Errorf("codex executor: close response body error: %v", errClose)
+@@ -474,6 +486,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+ 				translatedLine = append([]byte("data: "), data...)
+ 				eventType := ojson.GetBytesNoCopy(data, "type").String()
+ 				if streamErr, terminalBody, ok := codexTerminalFailureErrWithCooling(data, e.modelLevelCooling()); ok {
++					terminalSeen = true
+ 					if errClearReplay := clearCodexReasoningReplayOnInvalidSignature(ctx, replayScope, streamErr.StatusCode(), terminalBody); errClearReplay != nil {
+ 						helps.RecordAPIResponseError(ctx, e.cfg, errClearReplay)
+ 						reporter.PublishFailure(ctx, errClearReplay)
+@@ -495,6 +508,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+ 					sawOutputDelta = true
+ 				}
+ 				if helps.IsCodexTerminalEmptyIncomplete(data, len(outputItemsByIndex)+len(outputItemsFallback), sawOutputDelta) {
++					terminalSeen = true
+ 					streamErr := newCodexEmptyIncompleteStreamError()
+ 					helps.RecordAPIResponseError(ctx, e.cfg, streamErr)
+ 					reporter.PublishFailure(ctx, streamErr)
+@@ -508,6 +522,7 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
+ 				case "response.output_item.done":
+ 					collectCodexOutputItemDone(data, outputItemsByIndex, &outputItemsFallback)
+ 				case "response.completed", "response.incomplete", "response.done":
++					terminalSeen = true
+ 					terminalSuccess = true
+ 					isIncompleteEvent = eventType == "response.incomplete"
+ 					data = normalizeCodexWebsocketCompletion(data)

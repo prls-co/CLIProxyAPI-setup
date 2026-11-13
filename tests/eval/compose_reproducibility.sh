@@ -36,9 +36,9 @@ done
 cmp -s "$tmp/cpa-1.yaml" "$tmp/cpa-2.yaml"
 cmp -s "$tmp/compose-1.json" "$tmp/compose-2.json"
 
-cpa_expected='sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288'
+cpa_expected='sha256:dfbda6b94b96218c90e69a959eb7d023fcd397f19c811024539cfc79daa72fc5'
 cpamp_expected='sha256:5897b299887dbe7a8fa2e23850fe64949e5a60a94ba5e5aebd3acd810e710351'
-cpa_actual="$(docker buildx imagetools inspect ghcr.io/prls-co/cli-proxy-api-patched:v7.3.8-prls.3-f375487d29a06bd4cb0ad204cc19dbcf6e7dfb6d | awk '/^Digest:/ {print $2; exit}')"
+cpa_actual="$(docker buildx imagetools inspect ghcr.io/prls-co/cli-proxy-api-patched:v8.0.69-prls.2-a83a0af9cf3f4c8cccddb053f4bbe15ac2f471ee | awk '/^Digest:/ {print $2; exit}')"
 cpamp_actual="$(docker buildx imagetools inspect seakee/cpa-manager-plus:v1.11.2 | awk '/^Digest:/ {print $2; exit}')"
 [[ "$cpa_actual" == "$cpa_expected" ]]
 [[ "$cpamp_actual" == "$cpamp_expected" ]]

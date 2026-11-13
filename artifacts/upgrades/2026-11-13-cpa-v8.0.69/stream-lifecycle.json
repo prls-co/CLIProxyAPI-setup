@@ -1,0 +1,43 @@
+{
+  "test": "TEST-016",
+  "results": [
+    {
+      "startedAt": "2026-11-13T17:06:14.099Z",
+      "httpStatus": 200,
+      "cpaRequestId": "f4c18253",
+      "headersMs": 809,
+      "firstEventMs": 811,
+      "lastEventMs": 2111,
+      "eventCount": 11,
+      "terminalEvent": "response.completed",
+      "responseStatus": "completed",
+      "requestedReasoningEffort": "max",
+      "effectiveReasoningEffort": "max",
+      "cancelledBy": null,
+      "totalTokens": 35,
+      "durationMs": 2112,
+      "cancellationLogCount": 0,
+      "persistedUsageRecordCount": 1
+    },
+    {
+      "startedAt": "2026-11-13T17:06:16.211Z",
+      "httpStatus": 200,
+      "cpaRequestId": "fa105341",
+      "headersMs": 800,
+      "firstEventMs": 801,
+      "lastEventMs": 801,
+      "eventCount": 1,
+      "terminalEvent": null,
+      "responseStatus": "in_progress",
+      "requestedReasoningEffort": "max",
+      "effectiveReasoningEffort": "max",
+      "cancelledBy": "test-client-after-response.created",
+      "totalTokens": null,
+      "durationMs": 804,
+      "cancellationLogCount": 1,
+      "persistedUsageRecordCount": 0
+    }
+  ],
+  "logCorrelation": "exact short request ID; UUID suffix matches upstream ShortRequestID",
+  "cancelledUsage": "unknown; no usage fabricated"
+}

@@ -27,6 +27,7 @@ test("TEST-023 build ships only upstream archive plus verified patch", () => {
   assert.match(script, /git diff --quiet HEAD/);
   assert.match(dockerfile, /go test \.\/sdk\/cliproxy\/auth/);
   assert.match(dockerfile, /TestCodexStreamCancellation/);
+  assert.match(dockerfile, /go test -tags cpa_ownership -run '\^TestWriteJSONFileAtomicPreservesOwnership\$' \.\/internal\/auth\/codex/);
   assert.match(dockerfile, /COPY --from=builder \/CLIProxyAPI \/CLIProxyAPI\/CLIProxyAPI/);
   assert.doesNotMatch(dockerfile, /COPY \.|apt-get|\.env|state\//);
   assert.doesNotMatch(script, /source .*\.env|docker compose/);

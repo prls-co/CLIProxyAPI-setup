@@ -1,0 +1,25 @@
+{
+  "observedAt": "2026-11-13T17:07:02.658Z",
+  "cpamp": {
+    "http": 200,
+    "events": 109466,
+    "collector": "running",
+    "collectorErrorPresent": false
+  },
+  "providers": [
+    {
+      "provider": "claude",
+      "status": "error",
+      "disabled": false,
+      "unavailable": true,
+      "invalidGrant": true
+    },
+    {
+      "provider": "codex",
+      "status": "active",
+      "disabled": false,
+      "unavailable": false,
+      "invalidGrant": false
+    }
+  ]
+}
