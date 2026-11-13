@@ -2,7 +2,7 @@ name: cliproxyapi-setup
 
 services:
   cli-proxy-api:
-    image: ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288
+    image: ghcr.io/prls-co/cli-proxy-api-patched@sha256:2de74d9deff3c15c2b193e8389e53a4cad08ff7229839555f1d8e46803f40507
     restart: unless-stopped
     command:
       - ./CLIProxyAPI
@@ -115,7 +115,7 @@ services:
       start_period: 5s
 
   cloudflared-token-init:
-    image: ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288
+    image: ghcr.io/prls-co/cli-proxy-api-patched@sha256:2de74d9deff3c15c2b193e8389e53a4cad08ff7229839555f1d8e46803f40507
     profiles:
       - public
     restart: "no"
