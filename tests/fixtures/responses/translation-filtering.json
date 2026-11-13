@@ -3,6 +3,7 @@
   "reasoning": { "effort": "low" },
   "stream": true,
   "max_output_tokens": 128,
+  "user": "CPA_UNSUPPORTED_FIELD_MUST_BE_REMOVED",
   "instructions": "Return only the requested object.",
   "text": {
     "format": {
