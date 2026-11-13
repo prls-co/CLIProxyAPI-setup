@@ -4,7 +4,7 @@ Owner: [#4](https://github.com/prls-co/CLIProxyAPI-setup/issues/4).
 Upstream: [#5842](https://github.com/router-for-me/CLIProxyAPI/issues/5842).
 Client correction: [utility-llm #38](https://github.com/prls-co/utility-llm/issues/38).
 
-Status: the maintained image `v7.3.8-prls.3` is deployed by immutable digest.
+Status: the maintained image `v8.0.69-prls.2` is deployed by immutable digest.
 See [build, deployment and rollback evidence](patched-cpa-image.md).
 The CPA runtime configuration hash is unchanged; no credentials, retry policy,
 concurrency control, or CPAMP image was changed. The source patch below is the
@@ -12,11 +12,19 @@ single deployed implementation, built by the explicit publication workflow.
 
 ## Source-level correction
 
-The current upstream base is v7.3.8,
-`c93978c4ea2e908255a2a06c37599fda3651554a`. Its recovery-deadline behavior is
+The current upstream base is v8.0.69,
+`f7ae8feeb3710319f524730849fbe32fde1751e4`. Its recovery-deadline behavior is
 already upstream. The retained local patch in
-`patches/cpa-recovery-deadlines.patch` adds only cancellation lifecycle evidence
+`patches/cpa-recovery-deadlines.patch` adds cancellation lifecycle evidence
+and preserves the existing Linux credential-file owner during atomic replacement,
 and must be applied only to that pinned revision.
+
+The ownership correction follows an observed v8 startup regression: atomic
+Codex credential replacement in the root container changed a host-owned `0600`
+file to UID/GID 0. The patch preserves the existing UID/GID before rename and
+leaves the existing file intact if that operation fails. The image build runs
+a real root/CAP_CHOWN filesystem regression with synthetic token values;
+the deployed auth-readiness gate checks operator ownership again after restart.
 
 ## Historical v7.2.135 recovery correction
 
@@ -52,7 +60,7 @@ Upstream [#5819](https://github.com/router-for-me/CLIProxyAPI/issues/5819) was
 closed as not planned: cancellation exclusion from usage is intentional.
 The required evidence is therefore a lifecycle log, not fabricated CPAMP usage.
 
-## Verification
+## Retained v7 verification
 
 Passed on the patch:
 
@@ -66,7 +74,7 @@ disabled-credential exclusion, scheduler classification, wrapped-error context,
 and actual HTTP stream cancellation with exactly one lifecycle event and no
 provider failure. The public `Error` layout compatibility test passes.
 
-`go test ./...` is not all green. The untouched deployed source reproduces
+The historical v7 `go test ./...` run was not all green. Its untouched source reproduced
 `TestPionMediaRelayBridgesAudioAndDataChannel` (upstream DataChannel missing),
 three existing Claude fingerprint tests (`MacOS` versus expected `Linux`), and
 `TestGetPluginSyncCancellationInterruptsRead` (120-second delay when run with
@@ -74,6 +82,9 @@ the full Home package). The isolated Home cancellation test passes on the patch
 three times; the failure depends on the existing full-package test context.
 Those failures are outside this patch and have not been disguised as successes.
 Private full/baseline logs are retained in the two temporary source worktrees.
+These are retained observations, not a fresh full-suite result for v8. The
+current v8 build gates and deployment checks are recorded in
+[patched-cpa-image.md](patched-cpa-image.md).
 
 Setup `make test-static test-unit test-security` passed. The retained patch
 passes `git apply --check` against the untouched deployed source revision.

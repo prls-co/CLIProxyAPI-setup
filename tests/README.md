@@ -1,5 +1,13 @@
 # Tests
 
+`node scripts/probe-search-metadata.cjs EXISTING_DIRECTORY/report.json` is an
+explicit live capability diagnostic, outside all Make gates. It uses public
+CPA with Luna/low and makes three bounded requests without automatic retries:
+URL sources/citations, strict JSON plus sources, and raw image results. It
+records metadata counts and statuses only. A completed search with zero raw
+results does not establish support for `web_search_call.results`; inspect the
+pinned translator too. See the current upgrade receipt for observed results.
+
 The maintained v8 image runs the Linux `cpa_ownership` qualification in its root
 builder: an atomic Codex credential replacement must retain an existing
 operator UID/GID and mode `0600`, replace the synthetic token, and remove its

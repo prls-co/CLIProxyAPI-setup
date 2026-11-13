@@ -39,6 +39,12 @@ entry before callers can select contracted `lowest`.
 
 ## Current CPA capability research
 
+On 2026-11-13, `v8.0.69-prls.2` passed `TEST-026` locally and publicly:
+Luna and Astra, stream/nonstream, explicit `low` and `none`, each reporting
+effective `low`. The setup readiness check exercised all five Astra levels;
+the public lifecycle diagnostic separately verified native `max`. These
+fresh acceptance checks do not refresh every catalog-only row below.
+
 Checked on 2026-10-03 against CPA's upstream
 [model catalog](https://github.com/router-for-me/models/blob/ff3a6ab4316d31204c90a891ddc1cbbee14d0358/models.json)
 and the active authenticated `/v1/models` list. CPA refreshes this capability
@@ -69,7 +75,7 @@ completed response.
 
 ## Accepted CPA normalization
 
-CPA `v7.3.8-prls.3` normalizes an unsupported explicit `none` to the lowest
+CPA normalizes an unsupported explicit `none` to the lowest
 catalog level (`low` for the acceptance models). This satisfies the requirement
 in [setup issue #2](https://github.com/prls-co/CLIProxyAPI-setup/issues/2).
 Applications should select `lowest`, which sends `low` directly for these
@@ -77,7 +83,7 @@ profiles. Omitting reasoning uses a provider default and does not select
 `lowest`.
 
 No CPA binary patch or payload override is needed. Keep the maintained image
-pin and cancellation patch. Regression expectations live in the tests;
+pin and maintained patch. Regression expectations live in the tests;
 this setup does not introduce a second application model registry.
 
 ## Release gates
