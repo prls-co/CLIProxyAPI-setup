@@ -4,12 +4,30 @@ Owner tracker: [#3](https://github.com/prls-co/CLIProxyAPI-setup/issues/3).
 Upstream correction: [#5819](https://github.com/router-for-me/CLIProxyAPI/issues/5819).
 
 Update 2026-09-19: upstream closed #5819 as not planned because cancelled
-streams intentionally do not produce usage records. CPA v7.3.8-prls.3 is now
-deployed by immutable digest; its local patch uses the existing lifecycle log,
+streams intentionally do not produce usage records. CPA v8.0.69-prls.2 is now
+deployed by immutable digest; its ported local patch uses the existing lifecycle log,
 without `PublishFailure` or fabricated usage. See the current
 [build and deployment evidence](patched-cpa-image.md).
 
-## Current v7.3.8 verification
+## Current v8.0.69 verification
+
+The public `TEST-016` probe completed native `max` and separately cancelled
+after `response.created`. Exact request-ID suffix readback found one successful
+CPAMP row for the completed request, and one cancellation lifecycle log with
+no CPAMP row for the cancelled request. The retained usage outcome is unknown.
+See the [sanitized diagnostic receipt](../artifacts/upgrades/2026-11-13-cpa-v8.0.69/stream-lifecycle.json).
+
+V8 changed generated request IDs from eight hexadecimal characters to UUIDv7.
+The setup diagnostic now accepts both trace suffix forms and retains only the
+last eight characters, matching upstream `ShortRequestID` and local logs. The
+new deterministic regression failed before that parser correction. The first
+live probe completed/cancelled correctly but could not correlate its IDs;
+the post-correction probe establishes exact correlation. The utility-llm
+consumer at its tested revision still has the old trace parser: successful
+inference is qualified, but its `cpaRequestId` diagnostic remains null for v8
+until that consumer updates its parser. No utility-llm release is claimed here.
+
+## Retained v7.3.8 verification
 
 The deployed image passed the focused stream executor tests and the live
 `TEST-016` diagnostic. A native `max` request completed with its usage metadata;

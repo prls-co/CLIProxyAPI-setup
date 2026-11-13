@@ -1,0 +1,88 @@
+{
+  "observedAt": "2026-11-13T17:07:02Z",
+  "status": "deployed; GPT/Codex qualified; Claude OAuth and hosted clustering acceptance open",
+  "repository": "https://github.com/prls-co/CLIProxyAPI-setup",
+  "release": {
+    "version": "v8.0.69-prls.2",
+    "upstreamCommit": "f7ae8feeb3710319f524730849fbe32fde1751e4",
+    "patchSha256": "d51aa0bfcba9b99c21fd9563a18e5b7d1f97b0a75525ea8b6b67e2db02867deb",
+    "builderImage": "golang:1.26-bookworm@sha256:dc40a13b61304647ed7e5d581d246b86413dfc29d63c6d018310feb93cd98fc0",
+    "runtimeImage": "eceasy/cli-proxy-api@sha256:6c2c8a7904799bd29a3f7f92a598555d8321b6a5682000b87af4495c5704fa72",
+    "imageRepository": "ghcr.io/prls-co/cli-proxy-api-patched",
+    "platform": "linux/amd64"
+  },
+  "buildSourceCommit": "a83a0af9cf3f4c8cccddb053f4bbe15ac2f471ee",
+  "image": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:dfbda6b94b96218c90e69a959eb7d023fcd397f19c811024539cfc79daa72fc5",
+  "binarySha256": "ffdf7f6c6110f55d7c309559e0f83b604afd0250574b39a7d80986c7c676db2a",
+  "publicationWorkflow": "https://github.com/prls-co/CLIProxyAPI-setup/actions/runs/43466319815",
+  "pullRequest": "https://github.com/prls-co/CLIProxyAPI-setup/pull/8",
+  "environment": {
+    "public": "https://cpa.prls.co/v1",
+    "origin": "shaman",
+    "runtimeCheckoutBranch": "feat/temporal-retry-controls",
+    "verifiedCheckout": "8a3c468d1e555a1b5a1016c70bf6a2c5cb1fc058"
+  },
+  "configuration": {
+    "beforeSha256": "d4a6f7ebe8004fcee3151c49e3533afdbde85a02d1c516e3eddc1e8ebf1337f8",
+    "afterSha256": "d4a6f7ebe8004fcee3151c49e3533afdbde85a02d1c516e3eddc1e8ebf1337f8",
+    "retryPolicyChanged": false,
+    "credentialContentsRestored": false,
+    "canonicalOAuthFiles": 2,
+    "oauthUid": 1000,
+    "oauthGid": 1000,
+    "oauthMode": "0600"
+  },
+  "rollbackImage": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:99bedd436cf04530451aeff67b88d3e76dfff2f2c48691dbf68d07e0c27c7288",
+  "checks": {
+    "publishedImageBuild": "pass: SDK auth/handlers, config, translator, Codex auth, root ownership, executor cancellation, Home cancellation, compilation",
+    "isolatedRecoveryRetry0And3": "pass: two synthetic upstream calls each",
+    "makeVerifyInitial": "failed: stale max_output_tokens removal expectation; prior candidate failed credential ownership",
+    "verifyComponentsFinal": "all static, unit, security, local, contract and observability components passed; contract and observability rerun after correction",
+    "makeTestPublic": "failed at final Claude smoke HTTP 503; preceding public Responses, dashboard auth, utility-llm and reasoning passed",
+    "makeEval": "pass",
+    "collectionQualification": "fresh serial EVAL-004 passed after capability probes; initial evaluation overlapped probes and was not used for correlation qualification",
+    "streamLifecycle": "pass after UUID parser correction; exact log suffix and read-only CPAMP database lookup",
+    "fullUpstreamSuite": "not run on v8; v7 failures retained as historical evidence",
+    "browser": "not run",
+    "freshHostedClusteringCampaign": "not run; acceptance gate remains open"
+  },
+  "resolvedFindings": [
+    "v8 root atomic Codex credential replacement lost operator ownership; preserve existing Linux UID/GID before rename; real kernel red/green regression",
+    "v8 preserves max_output_tokens; contract asserts supported limit and unsupported user removal, retaining strict schema and sentinel",
+    "v8 UUIDv7 request IDs broke setup diagnostic; supports both ID forms and records only last eight characters"
+  ],
+  "openFindings": [
+    {
+      "owner": "Claude account",
+      "observation": "OAuth refresh reports invalid grant (retrying); public smoke HTTP 503",
+      "baseline": "previous-image behavior not tested; not established as pre-existing",
+      "nextStep": "operator reauthentication: bash scripts/cpa-claude-login.sh; then fish scripts/smoke-claude.fish and make test-public"
+    },
+    {
+      "owner": "utility-llm",
+      "observation": "tested src/providers/openai.js parser accepts only eight-character request IDs; cpaRequestId null with v8 UUIDs",
+      "inferenceAcceptance": "passed; diagnostic correlation unqualified until owner parser update"
+    },
+    {
+      "owner": "hosted clustering consumer",
+      "observation": "no fresh complete campaign; historical result is not current acceptance"
+    }
+  ],
+  "capabilities": {
+    "urlSourcesAndCitations": "observed public Luna/low, including strict JSON",
+    "rawImageResults": "not established: zero observed; pinned Codex include allowlist filters web_search_call.results",
+    "hardenLlmEndToEnd": "not run; existing payload builder and normalizer inspected only"
+  },
+  "evidenceFiles": [
+    "collection.json",
+    "image-recovery.json",
+    "pre-upgrade-backup.json",
+    "reasoning-local.json",
+    "reasoning-public.json",
+    "recovery.json",
+    "reliability.json",
+    "runtime.json",
+    "search-capabilities.json",
+    "stream-lifecycle.json"
+  ]
+}

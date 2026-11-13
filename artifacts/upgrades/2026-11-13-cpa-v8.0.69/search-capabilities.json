@@ -1,0 +1,75 @@
+{
+  "observedAt": "2026-11-13T17:00:56.361Z",
+  "base": "https://cpa.prls.co/v1",
+  "model": "gpt-5.6-luna",
+  "noAutomaticRetries": true,
+  "cases": [
+    {
+      "name": "sources-and-citations",
+      "requestedInclude": [
+        "web_search_call.action.sources"
+      ],
+      "httpStatus": 200,
+      "origin": "shaman",
+      "status": "completed",
+      "model": "gpt-5.6-luna",
+      "searchCalls": 1,
+      "completedSearchCalls": 1,
+      "sourceCount": 12,
+      "sourceTypes": [
+        "url"
+      ],
+      "citationCount": 2,
+      "rawResultCount": 0,
+      "rawResultTypes": [],
+      "imageResultCount": 0,
+      "totalTokens": 8766,
+      "structuredJSONValid": null,
+      "durationMs": 6146
+    },
+    {
+      "name": "structured-sources",
+      "requestedInclude": [
+        "web_search_call.action.sources"
+      ],
+      "httpStatus": 200,
+      "origin": "shaman",
+      "status": "completed",
+      "model": "gpt-5.6-luna",
+      "searchCalls": 2,
+      "completedSearchCalls": 2,
+      "sourceCount": 12,
+      "sourceTypes": [
+        "url"
+      ],
+      "citationCount": 1,
+      "rawResultCount": 0,
+      "rawResultTypes": [],
+      "imageResultCount": 0,
+      "totalTokens": 8902,
+      "structuredJSONValid": true,
+      "durationMs": 8229
+    },
+    {
+      "name": "image-results",
+      "requestedInclude": [
+        "web_search_call.results"
+      ],
+      "httpStatus": 200,
+      "origin": "shaman",
+      "status": "completed",
+      "model": "gpt-5.6-luna",
+      "searchCalls": 1,
+      "completedSearchCalls": 1,
+      "sourceCount": 0,
+      "sourceTypes": [],
+      "citationCount": 0,
+      "rawResultCount": 0,
+      "rawResultTypes": [],
+      "imageResultCount": 0,
+      "totalTokens": 5175,
+      "structuredJSONValid": null,
+      "durationMs": 6408
+    }
+  ]
+}

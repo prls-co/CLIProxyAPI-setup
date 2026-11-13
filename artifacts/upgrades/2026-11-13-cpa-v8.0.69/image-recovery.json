@@ -1,0 +1,112 @@
+[
+  {
+    "test": "TEST-024",
+    "image": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:dfbda6b94b96218c90e69a959eb7d023fcd397f19c811024539cfc79daa72fc5",
+    "startedAt": "2026-11-13T16:53:19.866Z",
+    "upstreamCalls": 2,
+    "responses": [
+      {
+        "status": 503,
+        "retryAfter": null,
+        "body": {
+          "error": {
+            "message": "synthetic upstream unavailable",
+            "type": "server_error"
+          }
+        }
+      },
+      {
+        "status": 503,
+        "retryAfter": "3",
+        "body": {
+          "error": {
+            "message": "auth_unavailable: no auth available (providers=openai-compatible-recovery-probe, model=recovery-probe; last upstream error: server_error: synthetic upstream unavailable)",
+            "type": "server_error",
+            "code": "internal_server_error"
+          }
+        }
+      },
+      {
+        "status": 200,
+        "retryAfter": null,
+        "body": {
+          "id": "synthetic",
+          "object": "chat.completion",
+          "model": "recovery-probe",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "RECOVERED"
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 1,
+            "completion_tokens": 1,
+            "total_tokens": 2
+          }
+        }
+      }
+    ],
+    "status": "pass",
+    "configuredRequestRetry": 0
+  },
+  {
+    "test": "TEST-024",
+    "image": "ghcr.io/prls-co/cli-proxy-api-patched@sha256:dfbda6b94b96218c90e69a959eb7d023fcd397f19c811024539cfc79daa72fc5",
+    "startedAt": "2026-11-13T16:53:23.807Z",
+    "upstreamCalls": 2,
+    "responses": [
+      {
+        "status": 503,
+        "retryAfter": null,
+        "body": {
+          "error": {
+            "message": "synthetic upstream unavailable",
+            "type": "server_error"
+          }
+        }
+      },
+      {
+        "status": 503,
+        "retryAfter": "3",
+        "body": {
+          "error": {
+            "message": "auth_unavailable: no auth available (providers=openai-compatible-recovery-probe, model=recovery-probe; last upstream error: server_error: synthetic upstream unavailable)",
+            "type": "server_error",
+            "code": "internal_server_error"
+          }
+        }
+      },
+      {
+        "status": 200,
+        "retryAfter": null,
+        "body": {
+          "id": "synthetic",
+          "object": "chat.completion",
+          "model": "recovery-probe",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "RECOVERED"
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 1,
+            "completion_tokens": 1,
+            "total_tokens": 2
+          }
+        }
+      }
+    ],
+    "status": "pass",
+    "configuredRequestRetry": 3
+  }
+]

@@ -35,12 +35,69 @@ and recreates `cli-proxy-api`; it must not restore old OAuth or CPAMP database
 state over newly collected state. Use a state restore only for an independently
 verified state-corruption incident. Do not prune either image during the gate.
 
-Full upstream tests have existing reproduced failures described in
+Historical v7 full upstream tests have reproduced failures described in
 [recovery-deadlines.md](recovery-deadlines.md). Focused regression/build success
 is not an all-green upstream suite claim. Require the local, public, collection,
 backup/recovery and complete hosted clustering gates after image promotion.
+The historical clustering campaign below remains its own bounded consumer
+evidence. This upgrade does not rerun that campaign; its hosted consumer gate
+remains open rather than inheriting the historical result.
 
-## Current Astra release: `v7.3.8-prls.3`
+## Current release: `v8.0.69-prls.2`
+
+- Upstream source: `f7ae8feeb3710319f524730849fbe32fde1751e4` ([v8.0.69](https://github.com/router-for-me/CLIProxyAPI/releases/tag/v8.0.69)).
+- Build source: `a83a0af9cf3f4c8cccddb053f4bbe15ac2f471ee`.
+- [Publish workflow](https://github.com/prls-co/CLIProxyAPI-setup/actions/runs/43466319815): passed all image regression gates, compilation and publication.
+- Published tag: `ghcr.io/prls-co/cli-proxy-api-patched:v8.0.69-prls.2-a83a0af9cf3f4c8cccddb053f4bbe15ac2f471ee`.
+- Index digest: `sha256:dfbda6b94b96218c90e69a959eb7d023fcd397f19c811024539cfc79daa72fc5`.
+- Running binary SHA-256: `ffdf7f6c6110f55d7c309559e0f83b604afd0250574b39a7d80986c7c676db2a`.
+- Applied patch SHA-256: `d51aa0bfcba9b99c21fd9563a18e5b7d1f97b0a75525ea8b6b67e2db02867deb`.
+- Go builder: pinned Go 1.26; the runtime base is unchanged.
+
+The v8 binary reads the existing v7 configuration and `/v0/management` contract.
+The deployed runtime configuration SHA-256 remains
+`d4a6f7ebe8004fcee3151c49e3533afdbde85a02d1c516e3eddc1e8ebf1337f8`.
+The cancellation patch was ported to v8 without creating usage on cancellation.
+The exact image passed isolated `TEST-024` recovery with request retry 0 and 3;
+each scenario made exactly two synthetic upstream requests. The build also gates
+the upstream configuration and Codex Responses translator tests.
+
+The first v8 image exposed a real credential-ownership regression: root-owned
+atomic replacement made the host's Codex file unreadable to the operator.
+`prls.2` preserves the existing Linux UID/GID before rename. A real root/CAP_CHOWN
+synthetic-file regression failed before the correction and passed after it.
+Existing credential contents were retained; only file ownership was reconciled
+before the corrected deployment. Both canonical files remain operator-owned
+mode `0600` after restart. The failed first gate is retained in the receipt.
+
+V8 now preserves `max_output_tokens`; the old contract expected it to be
+discarded. The revised live contract asserts the requested limit survives and
+an explicitly unsupported `user` field is removed, while retaining the strict
+schema and exact sentinel assertions.
+
+Fresh public Luna/low search probes returned 12 URL source references and two
+citations for text, and 12 references plus one citation with valid strict JSON.
+These are per-response reference counts, not a guarantee of completeness or
+unique sources. A requested image-result probe completed but returned no raw
+results or image results. The pinned Codex translator preserves
+`web_search_call.action.sources` and still filters `web_search_call.results`;
+the image probe therefore does not establish whether the upstream backend
+could supply raw results if that include were forwarded.
+
+The public GPT/Codex contract, utility-llm and reasoning checks passed. The
+Claude smoke returned HTTP 503; private management reports `invalid grant
+(retrying)` for its existing OAuth credential. Claude acceptance remains open
+until that account is reauthenticated and its smoke passes. The previous
+image's behavior with that credential was not retested, so this is not evidence
+that the failure predates the upgrade. Do not call the full public suite green.
+
+See the [sanitized release receipt](../artifacts/upgrades/2026-11-13-cpa-v8.0.69/receipt.json)
+and [search probe metadata](../artifacts/upgrades/2026-11-13-cpa-v8.0.69/search-capabilities.json)
+for the final check inventory and remaining gate. The previous `v7.3.8-prls.3`
+digest below remains the immediate rollback; rollback does not restore old
+credentials or CPAMP data. No browser or fresh hosted clustering campaign ran.
+
+## Retained Astra release: `v7.3.8-prls.3`
 
 - Upstream source: `c93978c4ea2e908255a2a06c37599fda3651554a` (`v7.3.8`).
 - Published tag: `ghcr.io/prls-co/cli-proxy-api-patched:v7.3.8-prls.3-f375487d29a06bd4cb0ad204cc19dbcf6e7dfb6d`.
